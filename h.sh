@@ -1,6 +1,7 @@
 #! /usr/bin/bash
 h(){
 t=`echo $@ | sed -E 's/[{}\.]/\\\&/g; s/\*/.*/g; s/\?/./; s/\\$/\\\s*$/'`
+[[ $t =~ \.$ ]] &&t="$t$"
 s=;IFS=$'\n'   # set it for Windows port, Msys: \r\n, Mac: \r
 for a in `history`;{ s="$a\n$s"; }
 n=`echo -e $s |sed -E "s/\s*([0-9]+)\s+$t.*/\1/i; tq; d; :q"`
