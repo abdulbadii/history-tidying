@@ -2,10 +2,10 @@
 h(){
 t=`echo $@ | sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./g'`
 [[ $t =~ \.$ ]] &&t="$t?$"
-s=;IFS=$'\n'
+s=;IFS=$'\n'  # change to \r\n for Windows port, \r for Mac port
 for a in `history`;{ s="$a\n$s"; }
 n=`echo -e $s |sed -E "s/^\s*([0-9]+)\s+$t.*/\1/i; tq; d; :q"`
-i=0;
+i=0;    # change back IFS=$'\n' for else than Linux
 for d in $n
 {
 test $i -lt 1 &&echo retaining the $d th history ||history -d $d
@@ -13,4 +13,5 @@ let i++
 }
 test "$i" -gt 1 &&echo "$i erasures"
 history -w;echo last 21:;history 21
+unset IFS # set to default
 }
