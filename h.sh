@@ -1,21 +1,37 @@
-#! /usr/bin/bash
 h(){
-t=`echo $@ | sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./g'`
-u=${t//.?/};u=${#u}
-[[ $t =~ \.\?$ ]] &&t="$t$"
-s=;IFS=$'\n'  # change to \r\n for Windows port, \r for Mac port
-for a in `history`;{ s="$a\n$s"; }
-n=`echo -e $s |sed -E "s'^\s*([0-9]+)\s+$t.*'\1'i; tq; d; :q"`
-i=0;
-# else than Linux add a line to set: IFS=$'\n'
-for d in $n
-{
-if test $i -eq 0 -a $u -gt 5 ;then echo retaining the $d th history
-else	history -d $d
+if [ -z "$1" ] ;then
+	history  -d -1
+	history 21
+	return
+elif [[ $1 =~ --help|-[acdnprsw] ]] ;then
+	history  -d -1
+	history $@
+	return
 fi
-let i++
+for a
+{
+case ${a} in
+-[1-9]*|[0-9]*-*)
+		l=${a%-*}
+		u=${a#*-}
+		[ $u ] ||{			# If no UPPER BOUNDARY
+			((l))||{ history -c;return; } #If no argument but - means clean all
+			t=`history 1`
+			u=${t#*[0-9] }
+			u=${t:0: -${#u}}
+		}
+		((l)) || l=1
+		let i=u-l
+		((i<0)) &&let i=-i
+		((++i))
+		while((i--));do
+			history -d $l
+		done;;
+[1-9]*)
+	history -d $a
+	;;
+*) i=;for e in `history|sed -nE "s/^\s*([0-9]+)\s+.*$a.*/\1/i p"`
+	{ let e-=i++;history -d $e; };;
+esac
 }
-echo "$i erasure(s)"
-history -w;echo last 21 lines:;history 21
-unset IFS # set to default
 }
