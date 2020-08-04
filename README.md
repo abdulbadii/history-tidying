@@ -1,3 +1,1 @@
-# history_tidyup
-Tidying up Bash commands history by putting good control in erasing certain line(s).
-Note on asignment IFS= after $ is newline character within quote pair, for Linux: \n, Mac port: \r, Windows port (Msys2): \r\n
+Tidying up Bash commands history by having good control in erasing certain line(s) by specific number(s) (range) or by a string segment being within a history line string.
