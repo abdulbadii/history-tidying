@@ -25,8 +25,6 @@ case ${a} in
 --help|-[acdnprsw])
 	history  -d -1
 	history $@;;
-[1-9]*)
-	history -d $a;;
 -[1-9]*|[0-9]*-*)
 		l=${a%-*}
 		u=${a#*-}
@@ -43,6 +41,8 @@ case ${a} in
 		while((i--));do
 			history -d $l
 		done;;
+[1-9]*)
+	history -d $a;;
 *) i=;for e in `history|sed -nE "s/^\s*([0-9]+)\s+.*$a.*/\1/i p"`
 	{ let e-=i++;history -d $e; };;
 esac
