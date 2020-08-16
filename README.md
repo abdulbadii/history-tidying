@@ -1,4 +1,4 @@
-Click, copy "hist.sh" above, then paste, prepend the Bash functions inside ~/.bashrc file    
+Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/.bashrc file    
 
 Tidying up Bash commands history by having good control in erasing certain line(s) by specific number(s) / range) or by a string segment in a history line.   
 
@@ -28,3 +28,9 @@ Escape to quit
 
 If we're sure know the number(s), another way is to put such directly following it:   
 $ h 371-375   
+
+There are some quick way if to remove from a certain number to the first or last, such following respectively:
+$ h -375   
+$ h 375-   
+
+will result in list of 376 to 379 with the new number 1 to 4, and list of 1 to 374 respectively
