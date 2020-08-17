@@ -1,6 +1,6 @@
 Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/.bashrc file    
 
-Tidying up Bash commands history by having good control in erasing certain line(s) by specific number(s) / range) or by a string segment in a history line.   
+Tidying up Bash commands history by having good control in erasing certain line(s) by specific number(s) or range or by a substring segment in a history line.   
 
 simply type h then it'll show first 13 lines of last shell commands e.g:   
 
@@ -20,7 +20,7 @@ $ h
   379  cat -n install   
 Show the next 13? (Enter/Spc: from newer , Ctrl-o: from older, 0..9 delete by number, Others to input string, Escape/Ctrl-c quit)   
 
-If we hit enter, it'll show downwardly continuation of line 366, line 357 - 365    
+If we hit enter, it'll show downwardly continuation of line 367 which is line 358 - 366    
 or if hit control o, it'll show history line 1 - 8 and the next b press the continuation of line 9, line 10 - 17   
 or if put in 371-375, it will remove these lines   
 or if put some strings, it'll remove any history line having the string   
