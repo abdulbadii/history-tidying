@@ -3,7 +3,7 @@ if [ -z "$1" ] ;then history -d -1
 	b=-12;f=
 	history 13;l=13
 	while : ;do
-		read -n 1 -p 'Show the next 13? (Enter/Spc: from newer , Ctrl-o: from older, 0..9 delete by number, Other input is string part of deletion target, Escape/Ctrl-C quit) ' m
+		read -n 1 -p 'Show the next 13? (Enter/Spc: from newer , Ctrl-o: from older, Escape/Ctrl-C quit, 0..9 delete by number, Others is as a deletion substring) ' m
 		case $m in
 		[0-9]*|-[1-9]*|[\!-~A-z]*)
 			read n
@@ -52,8 +52,13 @@ elif [[ ${a} =~ --help|-[acdnprsw] ]] ;then
 	history $@
 else
 	i=
-	for e in `history|sed -nE "s/^\s*([0-9]+)\s+.*$a.*/\1/i p"`
-	{ let e-=i++;history -d $e; }
+	if [ ${#a} -gt 2 ] ;then
+        for e in `history|sed -nE "s/^\s*([0-9]+)\s+.*$a.*/\1/i p"`
+        { let e-=i++;history -d $e; }
+    else
+        for e in `history|sed -nE "s/^\s*([0-9]+)\s+$a\$/\1/i p"`
+        { let e-=i++;history -d $e; }
+    fi
 	if [ $f ] ;then
 		history | tail -n+$b| head -n13
 	else
