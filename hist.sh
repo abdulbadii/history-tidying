@@ -34,7 +34,6 @@ if [ -z "$1" ] ;then history -d -1
 	done
 fi
 unset IFS
-
 for a
 {
 if [[ $a =~ --help|-[acnprsw] ]] ;then
@@ -44,7 +43,7 @@ if [[ $a =~ --help|-[acnprsw] ]] ;then
 elif [[ $a =~ ^[1-9]+$ ]] ;then
 		history -d $a
 		l=$a
-elif [[ $a =~ ^([0-9]+)?(-[0-9]+)? ]] ;then
+elif [[ $a =~ ^-?([0-9]+)(-[0-9]+)? ]] ;then
 	l=${BASH_REMATCH[1]}
 	u=${BASH_REMATCH[2]}
 	[ $u ] ||{			# If no UPPER BOUNDARY
