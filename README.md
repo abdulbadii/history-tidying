@@ -1,6 +1,6 @@
 Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/.bashrc file    
 
-Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a substring segment in a history line.   
+Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a substring segment existing in a history line.   
 
 simply type h then it'll show first 13 lines of last shell commands e.g:   
 
@@ -18,13 +18,13 @@ $ h
   377  cd roxterm/   
   378  cd debian/   
   379  cat -n install   
-Show the next 13? (Enter/Spc: from newer , Ctrl-o: from older, Escape/Ctrl-C quit, 0..9 delete by number, Others is as a deletion substring)   
+Show the next 13? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring)   
 
-If we hit enter, it'll show downwardly continuation of line 367 which is line 358 - 366   
-or if hit Ctrl-O, it'll show history line 1 - 13 and next Ctrl-O is the continuation of line 13: line 14 - 26   
+If we hit spacebar, it'll show downwardly continuation of line 367 which is line 358 - 366   
+or if hit Ctrl-b, it'll show history line 1 - 13 ie. beginning of command history and next Ctrl-b is the continuation of line 13: line 14 - 26   
 or if put in 371-375, it will remove these lines   
-or if put other keys it'll be treated as a sub string, it'll remove any history line having that string   
-or Ctrl-c or Escape to quit   
+or if put other keys it'll be treated as characters string, it'll remove any history line having that string   
+or if hit Enter then it will quit   
 
 If we're sure knowing the number(s) then another way is to put it directly in CLI way as thefollowing:   
 $ h 371-375   
@@ -33,4 +33,5 @@ There are some shoter way to remove from a certain number to the first or last, 
 $ h -375   
 $ h 375-   
 
-will result respectively in list of 376 to 379 with the first up to number 375 is erased, and list 1 up to 374 as number 375 to the last is gone   
+will result respectively in list number 376 to 379 as the first to number 375 get erased and   
+list of number 1 up to 374 as number 375 to the last get cleared   
