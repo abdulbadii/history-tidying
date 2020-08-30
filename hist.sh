@@ -80,9 +80,9 @@ else
 	break
 fi
 bfr=$u
-ad=`history |head -n1| sed -E 's/^\s*([0-9]+).*/\1/'`
 ((++j))
 }
+ad=`history |head -n1| sed -E 's/^\s*([0-9]+).*/\1/'`
 let s=u-B
 ((B=u>B? B-4-ad: u-4-ad))
 [[ $B < 0 ]] &&B=0
