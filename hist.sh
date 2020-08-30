@@ -1,7 +1,12 @@
 h(){
-if [ -z "$1" ] ;then history -d -1
-	b=-12
-	history 13;l=13
+F=1
+while : ;do
+if [ -z "$1" ] ;then
+	b=-12;l=13
+	((F)) &&{
+		history -d -1
+		history 13;
+	}
 	IFS=''
 	while : ;do
 		 echo -ne '\033[44;1;37m'
@@ -33,17 +38,17 @@ if [ -z "$1" ] ;then history -d -1
 		esac
 	done
 fi
-unset IFS j ll befr B abs
+unset IFS j befr B s
 for a
 {
 if [[ $a =~ --help|-[acnprsw] ]] ;then
 	history  -d -1
 	history $@
-	break
-elif [[ $a =~ ^[1-9]+$ ]] ;then
+	unset IFS;return
+elif [[ $a =~ ^[1-9][0-9]*$ ]] ;then
 		[[ $befr < $a ]] && let u=a-j
 		history -d $u
-elif [[ $a =~ ^-?([0-9]+)(-[0-9]+)? ]] ;then
+elif [[ $a =~ ^-?[1-9][0-9]*-?([1-9][0-9]*)?$ ]] ;then
 	l=${BASH_REMATCH[1]}
 	u=${BASH_REMATCH[2]}
 	[ $befr -lt $u ] && let l=u-j
@@ -67,19 +72,17 @@ else
 	break
 fi
 befr=$u
-
 ((B)) ||{
 	let B=u-`history |head -n1| sed -E 's/^\s*([0-9]+).*/\1/ p'`
 	[ $B -lt 0 ] &&B=0
 }
 ((++j))
 }
-
 let s=u-B
-((B=u>B? B-3: u-3))
+((B=u>B? B-4: u-4))
 s=${s#-}
 ((s=s>11? s+3: 15))
-history |tail -n+$B | head -n$s
-
-echo
+echo;history |tail -n+$B |head -n$s
+F=;eval set --
+done
 }
