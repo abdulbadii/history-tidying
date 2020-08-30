@@ -38,7 +38,7 @@ if [ -z "$1" ] ;then
 		esac
 	done
 fi
-unset IFS j befr B s
+unset IFS j s; B=$1;bfr=$1
 for a
 {
 if [[ $a =~ --help|-[acnprsw] ]] ;then
@@ -46,12 +46,16 @@ if [[ $a =~ --help|-[acnprsw] ]] ;then
 	history $@
 	unset IFS;return
 elif [[ $a =~ ^[1-9][0-9]*$ ]] ;then
-		[[ $befr < $a ]] && let u=a-j
+		u=$a
+		[[ $bfr < $u ]] &&{
+			let u-=j
+			B=$bfr
+		}
 		history -d $u
 elif [[ $a =~ ^-?[1-9][0-9]*-?([1-9][0-9]*)?$ ]] ;then
 	l=${BASH_REMATCH[1]}
 	u=${BASH_REMATCH[2]}
-	[ $befr -lt $u ] && let l=u-j
+	[ $bfr -lt $u ] && let l=u-j
 	[ $u ] ||{			# If no UPPER BOUNDARY
 		t=`history 1`
 		u=${t#*[0-9] }
@@ -64,22 +68,24 @@ elif [[ $a =~ ^-?[1-9][0-9]*-?([1-9][0-9]*)?$ ]] ;then
 	while((i--)) ;do
 		history -d $l
 	done
+	[[ $bfr < $u ]] &&{
+		let u-=i+j
+		B=$bfr
+	}
 else
 	i=
 	[ ${#a} -gt 2 ] && a=.\*$a.\*
-	for l in `history|sed -nE "s/^\s*([0-9]+)\s+$a/\1/ p"`
+	for l in `history|sed -nE "s/^\s*([0-9]+)\s+$a\$/\1/ p"`
 		{ let l-=i++;history -d $l; }
 	break
 fi
-befr=$u
-((B)) ||{
-	let B=u-`history |head -n1| sed -E 's/^\s*([0-9]+).*/\1/ p'`
-	[ $B -lt 0 ] &&B=0
-}
+bfr=$u
+ad=`history |head -n1| sed -E 's/^\s*([0-9]+).*/\1/'`
 ((++j))
 }
 let s=u-B
-((B=u>B? B-4: u-4))
+((B=u>B? B-4-ad: u-4-ad))
+[[ $B < 0 ]] &&B=0
 s=${s#-}
 ((s=s>11? s+3: 15))
 echo;history |tail -n+$B |head -n$s
