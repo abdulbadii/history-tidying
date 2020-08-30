@@ -1,6 +1,6 @@
 Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/.bashrc file    
 
-Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a substring segment existing in a history line.   
+Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by string segment lying in a history line.   
 
 simply type h then it'll show first 13 lines of last shell commands e.g:   
 
@@ -25,8 +25,10 @@ or hit Ctrl-b, it'll show history line 1 - 13 ie. beginning of command history a
 or put in 371-375, it will remove these lines   
 or put other keys it'll be treated as characters string, it'll remove any history line having that string   
 or hit Enter then it will quit   
+or could even be put multi numbers in single entry line;   
+369 371 377, would clear history number 369, 371, and 377 once
 
-If we're sure knowing the number(s) then another way is to put it directly in CLI way as thefollowing:   
+If we're sure knowing the number(s) then another way is to put it directly in Bash CLI prompt as the following:   
 $ h 371-375   
 
 There are some shoter way to remove from a certain number to the first or last, such as following:   
