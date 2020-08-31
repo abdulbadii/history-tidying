@@ -51,10 +51,7 @@ if [[ $a =~ --help|-[acnprsw] ]] ;then
 	unset IFS;return
 elif [[ $a =~ ^[1-9][0-9]*$ ]] ;then
 		u=$a
-		[ $bfr -lt $u ] &&{
-			let u-=j
-			B=$bfr
-		}
+		[ $B -lt $u ] && let u-=j
 		history -d $u
 elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]] ;then
 	l=${BASH_REMATCH[1]}
@@ -75,11 +72,11 @@ fi
 B=$u
 ((++j))
 }
+
 ((s=B? u-B: 13))
 s=${s#-}
 ((bo=u>B? B-4-of: u-4-of))
 ((bo=bo<0? 0: bo))
-
 ((s=s>11? s+3: 15))
 echo;history |tail -n+$bo |head -n$s
 ((F)) &&{ unset IFS;return; }
