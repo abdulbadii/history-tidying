@@ -20,8 +20,9 @@ if [ -z "$1" ] ;then
 		$'\x20')
 			echo
 			if [ $((l+=17)) -gt $t ] ;then
-				history | head -n$((t-l+17-1))
-				l=
+				let l-=t-1
+				history |head -n$((17-l))
+				echo;history $l
 			else
 				history $l| head -n17
 			fi;;
@@ -30,8 +31,6 @@ if [ -z "$1" ] ;then
 			read n
 			eval set -- $m$n
 			break;;
-		$'\x0a')
-			unset IFS;echo;return;;
 		$'\x02') # Ctrl b
 			echo
 			history | tail -n+$b	| head -n17
@@ -39,8 +38,9 @@ if [ -z "$1" ] ;then
 				let b-=t
 				history	|head -n$b
 				let ++b
-			fi	
-			;;
+			fi;;
+		$'\x0a')
+			unset IFS;echo;return;;
 		*)	echo -n $m
 			read n
 			s=$m$n
@@ -90,6 +90,6 @@ echo;history |tail -n+$bo |head -n$s
 ((F)) &&{ unset IFS;return; }
 eval set --
 done
-for l in `history|sed -nE "s/^\s*([0-9]+)\s*\$/\1/ p"`
+for l in `history|sed -nE "s/^\s*([0-9]+)\*?\s*\$/\1/ p"`
 	{ let l-=i++;history -d $l; }
 }
