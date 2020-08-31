@@ -4,35 +4,43 @@ while : ;do
 t=`history|head -n1`
 of=${t#*[0-9] }
 of=${t:0: -${#of}}
-t=
+
+unset t r
 IFS=$'\n';for ll in `history` ;{ ((t++)); }
 if [ -z "$1" ] ;then
-	b=-12;l=13
-	((F)) &&{
-		history -d -1;history 13;F=
-	}
+	((F)) &&{	history -d -1;history 17;F=;	}
+	b=1
+	l=17
 	IFS=''
 	while : ;do
 		 echo -ne '\033[44;1;37m'
-		 read -d '' -sn 1 -p 'Show the next 13? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring) ' m
-		echo -e '\033[0m'
+		 read -d '' -sn 1 -p 'Show the next 17? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring) ' m
+		echo -ne '\033[0m'
 		case $m in
-		$'\x0a')
-			unset IFS;echo;return;;
 		$'\x20')
-			((l+=13))
-			[ $l -gt $((t+13)) ] && l=13
-			history $l| head -n13
-		;;
-		$'\x02') # Ctrl b
-			((b+=13))
-			history | tail -n+$b| head -n13
-		;;
+			echo
+			if [ $((l+=17)) -gt $t ] ;then
+				history | head -n$((t-l+17-1))
+				l=
+			else
+				history $l| head -n17
+			fi;;
 		[0-9]|-)
 			echo -n $m
 			read n
 			eval set -- $m$n
 			break;;
+		$'\x0a')
+			unset IFS;echo;return;;
+		$'\x02') # Ctrl b
+			echo
+			history | tail -n+$b	| head -n17
+			if [ $((b+=17)) -gt $t ]; then
+				let b-=t
+				history	|head -n$b
+				let ++b
+			fi	
+			;;
 		*)	echo -n $m
 			read n
 			s=$m$n
@@ -73,7 +81,7 @@ B=$u
 ((++j))
 }
 
-((s=B? u-B: 13))
+((s=B? u-B: 17))
 s=${s#-}
 ((bo=u>B? B-4-of: u-4-of))
 ((bo=bo<0? 0: bo))
@@ -82,4 +90,6 @@ echo;history |tail -n+$bo |head -n$s
 ((F)) &&{ unset IFS;return; }
 eval set --
 done
+for l in `history|sed -nE "s/^\s*([0-9]+)\s*\$/\1/ p"`
+	{ let l-=i++;history -d $l; }
 }

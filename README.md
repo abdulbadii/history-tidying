@@ -2,7 +2,7 @@ Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/
 
 Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by string segment lying in a history line.   
 
-simply type h then it'll show first 13 lines of last shell commands e.g:   
+simply type h then it'll show the latest 17 lines of shell commands e.g:   
 
 $ h   
   367  pushd --help   
@@ -18,20 +18,21 @@ $ h
   377  cd roxterm/   
   378  cd debian/   
   379  cat -n install   
-Show the next 13? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring)   
+Show the next 17? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring)   
 
-hit spacebar, will show continuation of line 367 downwardly which is line 358 - 366   
+hit Enter then it will quit back to shell prompt   
+or hit spacebar, will show continuation of line 367 downwardly which is line 358 - 366   
 or hit Ctrl-b, it'll show history line 1 - 13 ie. beginning of command history and next Ctrl-b is the continuation of line 13: line 14 - 26   
 or put in 371-375, it will remove these lines   
-or put other keys it'll be treated as characters string, it'll remove any history line having that string   
-or hit Enter then it will quit   
 or could even be put multi numbers in single entry line;   
-369 371 377, would clear history number 369, 371, and 377 once
+369 371 377, would clear history number 369, 371, and 377 at once   
+or put other keys it'll be treated as characters string, it'll remove any history line having that string   
+but if it's less or equal than 2 characters it'll only search that whole word otherwise if it's more than 2 characters it'll match any line containes this string in any context form.   
 
 If we're sure knowing the number(s) then another way is to put it directly in Bash CLI prompt as the following:   
 $ h 371-375   
 
-There are some shoter way to remove from a certain number to the first or last, such as following:   
+There are some shorter ways to remove from a certain number to the first or last, such as following:   
 
 $ h -375   
 $ h 375-   
