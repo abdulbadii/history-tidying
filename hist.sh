@@ -1,12 +1,11 @@
 h(){
-F=1
-while : ;do
-t=`history|head -n1`
-of=${t#*[0-9] }
-of=${t:0: -${#of}}
-t=
+F=1;dt=;t=
 IFS=$'\n'
 for ll in `history` ;{ ((t++)); }
+while : ;do
+let t-=dt
+[[ `history|head -n1` =~ ^[\ \\t]*([0-9]+) ]]
+of=${BASH_REMATCH[1]}
 
 if [ -z "$1" ] ;then
 	((F)) &&{	history -d -1;history 17;F=;	}
@@ -51,7 +50,7 @@ if [ -z "$1" ] ;then
 	done
 fi
 
-unset IFS j s l b u; B=0
+unset IFS j k s l b u; B=0
 for a
 {
 if [[ $a =~ --help|-[acnprsw] ]] ;then
@@ -60,19 +59,23 @@ if [[ $a =~ --help|-[acnprsw] ]] ;then
 	unset IFS;return
 elif [[ $a =~ ^[1-9][0-9]*$ ]] ;then
 		u=$a
-		[ $B -lt $u ] && let u-=j
-		history -d $u
+		[ $B -lt $u ] && let u-=j+k
+		history -d $u 2>/dev/null &&((++j))
+		b=$B
 elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]] ;then
 	l=${BASH_REMATCH[1]}
 	u=${BASH_REMATCH[2]}
 	((u=u? u: t))
-	let i=u-$((l=l? l: 1))
-	let i=1+${i#-}
-	[ $B -lt $u ] && let u-=i+j
-	while((i--)) ;do history -d $l
+	((u<l)) &&{
+		m=$u
+		u=$l;l=$m
+	}
+	let i=1+u-l
+	[ $B -lt $u ] && let u-=j+k
+	while((i--)) ;do history -d $l 2>/dev/null &&((++k))
 	done
-elif [ "$a" = - ] ;then
-	history -d -1;break 2
+	b=$l
+elif [ "$a" = - ] ;then	history -d -1;break 2
 else
 	i=
 	[ ${#a} -gt 2 ] && a=.\*$a.\*
@@ -80,11 +83,9 @@ else
 		{ let l-=i++;history -d $l; }
 	break
 fi
-((++j))
-b=$B
 B=$u
 }
-
+#let dt=j+k
 ((s=b? u-b: 17))
 s=${s#-}
 ((bo=u>b? b-4-of: u-4-of))
