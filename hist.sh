@@ -13,7 +13,7 @@ if [ -z "$1" ] ;then
 		printf -vT ${t@P}
 		let t=T-o+1
 		echo -ne '\033[44;1;37m'
-		read -d '' -sn 1 -p 'Show the next 17? (Enter: abort, Up: from newer, Down: from begin, [-]n[-][n] erase by number n (range n-n), Others as deletion substring) ' m
+		read -d '' -sn 1 -p 'Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n (range n-n), Others as deletion substring) ' m
 		echo -ne '\033[0m'
 		case $m in
 		$'\x1b') #ESC
@@ -138,7 +138,7 @@ fi
 ((F)) &&break
 set --
 done
-[[:graph:]].*
+
 IFS=$'\n';i=;for l in `history`
 {
 	[[ $l =~ ^\ *([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++))
