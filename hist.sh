@@ -1,11 +1,11 @@
 h(){
-F=1;dt=;t=
-IFS=$'\n'
-for ll in `history` ;{ ((t++)); }
+F=1
+#IFS=$'\n';for ll in `history` ;{ ((t++)); }
 while : ;do
-let t-=dt
 [[ `history|head -n1` =~ ^[\ \\t]*([0-9]+) ]]
 of=${BASH_REMATCH[1]}
+t='\!'; printf -vt ${t@P}
+let t-=of-1
 
 if [ -z "$1" ] ;then
 	((F)) &&{	history -d -1;history 17;F=;	}
@@ -13,8 +13,8 @@ if [ -z "$1" ] ;then
 	l=17
 	IFS=''
 	while : ;do
-		 echo -ne '\033[44;1;37m'
-		 read -d '' -sn 1 -p 'Show the next 17? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring) ' m
+		echo -ne '\033[44;1;37m'
+		read -d '' -sn 1 -p 'Show the next 17? (Enter: no/quit, Space: from newer, Ctrl-b: from begin, [-]0..9[-] delete by number/range, Others as a deletion substring) ' m
 		echo -ne '\033[0m'
 		case $m in
 		$'\x20') #SPC
@@ -67,8 +67,7 @@ elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]
 	u=${BASH_REMATCH[2]}
 	((u=u? u: t))
 	((u<l)) &&{
-		m=$u
-		u=$l;l=$m
+		m=$u;u=$l;l=$m
 	}
 	let i=1+u-l
 	[ $B -lt $u ] && let u-=j+k
@@ -77,15 +76,27 @@ elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]
 	b=$l
 elif [ "$a" = - ] ;then	history -d -1;break 2
 else
-	i=
+	i=;IFS=$'\n'
 	[ ${#a} -gt 2 ] && a=.\*$a.\*
-	for l in `history|sed -nE "s/^\s*([0-9]+)\s+$a\$/\1/ p"`
-		{ let l-=i++;history -d $l; }
+	for l in `history|sed -nE "s/^\s*([0-9]+)\s+$a\$/\1/p"`
+	{
+		((i)) ||{
+			let m=t-l+1
+			echo This line: `history $m|head -n1`
+		}
+		let l-=i++
+		history -d $l
+	}
+	if ! ((i)) ;then echo -n No history line matched, none has
+	elif ((i>1)) ;then echo -n and $i other following it have
+	else echo -n and only this history line, has
+	fi
+	echo \ been erased
 	break
 fi
 B=$u
 }
-#let dt=j+k
+((i)) ||{ set --;continue; }
 ((s=b? u-b: 17))
 s=${s#-}
 ((bo=u>b? b-4-of: u-4-of))
@@ -94,8 +105,7 @@ history |tail -n+$bo |head -n$((s=s>13? s+3: 17))
 ((F)) &&break
 set --
 done
-IFS=$'\n'
-i=;for l in `history`
+IFS=$'\n';i=;for l in `history`
 {
 	[[ $l =~ ^[\ \\t]*([0-9]+)\*?[\ \\t]*$ ]] &&{
 		let l=BASH_REMATCH[1]-i++
