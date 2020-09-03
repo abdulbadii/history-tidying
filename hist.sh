@@ -52,7 +52,7 @@ if [ -z "$1" ] ;then
 	done
 fi
 
-unset IFS j k s l b u; B=0
+unset IFS i j k s l b u; B=0
 for a
 {
 [[ `history|head -n1` =~ ^\ *([0-9]+) ]]
@@ -86,6 +86,8 @@ elif ((F)) && [ "$a" = - ] ;then history -d -1;break 2
 else
 	a=${a//\\/\\\\}
 	a=${a//\//\\/}
+	a=${a//'/\\'}
+	a=${a//"/\\"}
 	a=${a//./\\.}
 	a=${a//\*/\\*}
 	a=${a//\?/\\?}
@@ -123,6 +125,7 @@ fi
 B=$u
 }
 
+let dt=i+j+k
 ((u<b))&&{
 	m=$b;b=$u;u=$m
 }
@@ -133,12 +136,11 @@ if((u-b<17)) ;then
 else
 	history |tail -n+$b |head -n7
 	echo '  '...
-	history $((T-u+i-3)) |head -n7
+	history $((T-u+dt-3)) |head -n7
 fi
 ((F)) &&break
 set --
 done
-
 IFS=$'\n';i=;for l in `history`
 {
 	[[ $l =~ ^\ *([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++))
