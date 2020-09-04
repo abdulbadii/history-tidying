@@ -1,18 +1,17 @@
 h(){
+history -d -1
 F=1
 while : ;do
 if [ -z "$1" ] ;then
-	((F)) &&{	history -d -1;history 17;F=;	}
+	((F))&&{	history 17;F=;	 }
 	b=1
 	l=17
 	IFS='';while : ;do
 		[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
 		o=${BASH_REMATCH[1]}
-		t='\!'
-		printf -vT ${t@P}
+		t='\!';printf -vT ${t@P}
 		let t=T-o+1
-		echo -ne '\033[44;1;37m'
-		read -sN 1 -p "Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring) `echo  $'\e[0m'$'\n\r'`" m
+		read -sN 1 -p "`echo $'\e[44;1;37m'`Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring) `echo -e '\e[0m\n\r'`" m
 		case $m in
 		$'\x1b') #ESC
 			read -N 2 n
@@ -54,8 +53,7 @@ for a
 {
 [[ `history|head -n1` =~ ^\ *([0-9]+) ]]
 o=${BASH_REMATCH[1]}
-t='\!'
-printf -vT ${t@P}
+t='\!';printf -vT ${t@P}
 let t=T-o+1
 if((F)) &&[[ $a =~ --help|-[acnprsw] ]] ;then
 	history  -d -1
@@ -79,7 +77,7 @@ elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]
 	while((i--)) ;do history -d $l 2>/dev/null &&((++k))
 	done
 	b=$l
-elif ((F)) && [ "$a" = - ] ;then history -d -1;break 2
+elif ((F)) && [ "$a" = - ] ;then break 2
 else
 	a=${a//\\/\\\\};a=${a//\//\\/};a=${a//'/\\'};a=${a//"/\\"};a=${a//./\\.};a=${a//\*/\\*}
 	a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]};a=${a//\(/\\(};a=${a//\)/\\)};a=${a//\{/\\{}
