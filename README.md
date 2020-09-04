@@ -18,21 +18,20 @@ $ h
   377  cd roxterm/   
   378  cd debian/   
   379  cat -n install   
-Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n (range n-n), Others as deletion substring)   
+Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring)   
 
 - hit Enter then it will quit back to shell prompt   
-- or hit Up, will show continuation of line 367 downwardly which is line 358 - 366   
-- or hit Down, it'll show history line 1 - 13 ie. beginning of command history and next Down is the continuation of line 13: line 14 - 26   
-- or put in 371-375, it will remove these lines   
+- or hit Up key, will show continuation of line 367 upwardly to less number, which is line 358 - 366   
+- or hit Down key, it'll show beginning of history line 1 - 13, and next Down is the continuation of line 13: line 14 - 26   
+- or put in 371-375, it will remove lines 371, 372, 373, 374, 375. Likewise for reverse order entry 375-371   
 - or could even be put multi numbers in single entry line;   
 369 371 377, would clear history number 369, 371, and 377 at once   
-- or put other keys it'll be treated as characters of string, any history line having that string will be removed. If it's only 1 character it'll be searched for as a whole word, otherwise if it's more than a character it'll match any line containes string of those characters in any context, but this can be made as whole word search if we surround it by space   
+- or put other keys it'll be treated as characters of string, more precisely substring of a line, any history line having that string will be removed. If it's only 1 character, that's searched for as a whole word, otherwise if it's more than a character it'll match any line containes string of those characters in any context, but this can be made as whole word search if we surround it by space   
 
-If we're sure knowing the number(s) then another way is to put it directly in Bash CLI prompt as the following:   
+If we're sure knowing the number without listing the history, then another way is to put it directly in Bash CLI prompt such as:   
 $ h 371-375   
 
 There are some shorter ways to remove a range of certain number up to the first or last, such as following:   
-
 $ h -375   
 $ h 375-   
 
@@ -53,4 +52,4 @@ So don't forget to do
 
 $ h -w
 
-after tidying it up or feeling sure it's at best improved, to save it in ~/.bash_history before exit
+after tidying up and feeling sure it's best improved, to save it in ~/.bash_history before exit
