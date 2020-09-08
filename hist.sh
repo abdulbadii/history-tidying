@@ -1,11 +1,8 @@
 h(){
-history -d -1
-[[ $1 =~ --help|-[acnprsw] ]] &&{	history $@;return;}
-F=1
-	[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
-	t='\!'
-	let t=${t@P}-${BASH_REMATCH[1]}+1
-	l=17;h=$t
+history -d -1;[[ $1 =~ --help|-[acnprsw] ]] &&{	history $@;return;}
+F=1;h=;l=17
+[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
+let t=HISTCMD-${BASH_REMATCH[1]}
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 17;F=;	 }
@@ -28,10 +25,11 @@ if [ -z "$1" ] ;then
 						history $l| head -n17
 					fi;;
 				B) #DN
-					history $h	| head -n17
-					((((h-=17))<0)) &&{
-						history	$t| head -n$((-h))
-						let h+=t;	};;
+					history $((t-h))	| head -n17
+					((((h+=17))>t)) &&{
+						history	$t| head -n$((h-t))
+						let h-=t
+					};;
 				esac
 			fi;;
 		$'\x0a')
@@ -61,7 +59,7 @@ for a
 		l=${BASH_REMATCH[1]}
 		u=${BASH_REMATCH[2]}
 		((l=l? l: 1))
-		((u=u? u: T))
+		((u=u?u:HISTCMD-1))
 		((u<l)) &&{		m=$u;u=$l;l=$m; }
 		let D=j+k
 		((B<u)) && let u-=D
@@ -87,7 +85,7 @@ for a
 		for u in `history|sed -nE "s#^\s*([0-9]+)\s+$a\\$#\1#p"`
 		{
 			((D)) ||{
-				let m=T-u+1
+				let m=HISTCMD-u
 				echo -e Line: '\033[41;1;37m'`history $m|head -n1`'\033[0m'
 				b=$u
 			}
@@ -99,26 +97,22 @@ for a
 		fi
 	fi
 	B=$u
-	[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
-	o=${BASH_REMATCH[1]}
-	t='\!';printf -vT ${t@P}
-	let t=T-o+1
 }
-b=$b
-u=$u
+[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
+let t=HISTCMD-${BASH_REMATCH[1]}
 ((u<b))&&{	m=$b;b=$u;u=$m; }
 ((b=b>4? b-4: 1))
 if((u-D-b+3<17)) ;then
-	if((T-b+3<17)) ;then
+	if((HISTCMD-b+3<17)) ;then
 		history $((l=17))
 	else
-		let l=T-b+D+4
+		let l=HISTCMD-b+D+3
 		history $l |head -n17
 	fi
 else
-	history $((T-b)) |head -n7
+	history $((HISTCMD-b)) |head -n7
 	echo '  '...
-	history $((l=T-u+D+4)) |head -n7
+	history $((l=HISTCMD-u+D+3)) |head -n7
 fi
 let l+=17
 ((F))&&break
