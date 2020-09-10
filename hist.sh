@@ -1,8 +1,8 @@
 h(){
-history -d -1;[[ $1 =~ --help|-[acnprsw] ]] &&{	history $@;return;}
-F=1;h=;l=17
+history -d -1;[[ $1 =~ --help$|-c?$|-[anprsw] ]] &&{	history ${@%-};return;}
+F=1;l=17
 [[ `history|head -n1` =~ ^\ *([0-9]+) ]]
-let t=HISTCMD-${BASH_REMATCH[1]}
+let h=t=HISTCMD-${BASH_REMATCH[1]}
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 17;F=;	 }
@@ -25,10 +25,10 @@ if [ -z "$1" ] ;then
 						history $l| head -n17
 					fi;;
 				B) #DN
-					history $((t-h))	| head -n17
-					((((h+=17))>t)) &&{
-						history	$t| head -n$((h-t))
-						let h-=t
+					history $h	| head -n17
+					((((h-=17))<0)) &&{
+						history	$t| head -n$((-h))
+						let h+=t
 					};;
 				esac
 			fi;;
@@ -40,7 +40,8 @@ if [ -z "$1" ] ;then
 				eval set -- $m
 				break
 			else
-				eval set -- \'$m\'
+				m=${m//\'/\'}
+				eval set -- \"$m\"
 				break
 			fi;;
 		esac
@@ -69,9 +70,9 @@ for a
 		b=$l
 	else
 		a=${a//\\/\\};a=${a//#/\#}
-		a=${a//'/\\'};a=${a//"/\\"};a=${a//./\\.};a=${a//\*/\\*}
-		a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]};a=${a//\(/\\(};a=${a//\)/\\)};a=${a//\{/\{}
-		a=${a//\}/\}}
+		a=${a//'/\'};a=${a//\"/\"};a=${a//./\\.};a=${a//\*/\\*}
+		a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]};a=${a//\(/\\(};a=${a//\)/\\)}
+		a=${a//\{/\{};a=${a//\}/\}}
 		((${#a}>1)) &&{
 			if [[ $a =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then
 				a=.\*$a.\*
@@ -84,7 +85,7 @@ for a
 		D=;IFS=$'\n'
 		for u in `history|sed -nE "s#^\s*([0-9]+)\s+$a\\$#\1#p"`
 		{
-			((D)) ||{
+			((D))||{
 				let m=HISTCMD-u
 				echo -e Line: '\033[41;1;37m'`history $m|head -n1`'\033[0m'
 				b=$u
@@ -109,12 +110,17 @@ if((u-D-b+3<17)) ;then
 		let l=HISTCMD-b+D+3
 		history $l |head -n17
 	fi
+	let h=l-17
 else
 	history $((HISTCMD-b)) |head -n7
 	echo '  '...
-	history $((l=HISTCMD-u+D+3)) |head -n7
+	if((((l=HISTCMD-u+D+3))<7)) ;then
+		history 7;let h=t
+	else
+		history $l	|head -n7
+		let h=l-7
+	fi
 fi
-let l+=17
 ((F))&&break
 set --
 done
