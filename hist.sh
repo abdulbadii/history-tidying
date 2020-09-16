@@ -1,5 +1,5 @@
 h(){
-history -d -1;[[ $1 =~ ^(--help$|[1-9]|1[0-7]|-c$|.|-[anprsw]) ]] &&{	history ${@#.};return;}
+history -d -1;[[ $1 =~ ^(--help$|-c$|\.|-[anprsw]) ]] &&{	history ${@#.};return;}
 F=1;l=17
 [[ `history|head -n1` =~ ^\ *([0-9]+) ]]
 let h=t=HISTCMD-${BASH_REMATCH[1]}
@@ -7,12 +7,12 @@ while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 17;F=;	 }
 	IFS='';while : ;do
-		read -sN 1 -p "`echo $'\e[44;1;37m'`Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring) `echo -e '\e[0m\n\r'`" m
+		read -rsN 1 -p "`echo $'\e[44;1;37m'`Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring) `echo -e '\e[0m\n\r'`" m
 		case $m in
 		$'\033') #ESC
 			read -N 1 m
 			if [[ $m = [ ]] ;then
-				read -N 1 m
+				read -rN 1 m
 				echo
 				case $m in
 				A) #UP
@@ -30,7 +30,16 @@ if [ -z "$1" ] ;then
 						let h+=t
 					};;
 				#~ C|D) # RG, LF
-					#~ echo Get into history completion mode.. now Up or Down retrieve line from the middle to the next older or newer respectively
+					#~ echo Get in history completion mode, now Up/Down get line in the middle list to the next older/newer respectively
+				#~ read -N 3 m;echo
+				#~ case $m in
+					#~ $'\033[A')
+					#~ echo -e TES$\033[A
+						#~ read -rei "`echo -e $'\033[A$\033[A\n'`" m
+						#~ for((i=;i<h-9;i++));{
+							#~ echo -e $\033[A;};;
+					#~ $'\033[B');;
+					#~ esac
 				esac
 			fi;;
 		$'\x0a')
@@ -42,7 +51,7 @@ if [ -z "$1" ] ;then
 				break
 			else
 				m=${m//\'/\'}
-				eval set -- \"$m\"
+				set -- $m
 				break
 			fi;;
 		esac
@@ -51,6 +60,16 @@ fi
 unset IFS s l b u B i j k D
 for a
 {
+	if((F));then
+		case $a in
+		0)
+		history 9;break 2;;
+		1)
+		history 17;break 2;;
+		2)
+		history 34;break 2;;
+		esac
+	fi
 	if [[ $a =~ ^[1-9][0-9]*$ ]] ;then
 			u=$a
 			let D=j+k
@@ -73,6 +92,7 @@ for a
 		b=$l
 	else
 		a=${a//\\/\\};a=${a//#/\#}
+		a=${a//^/\\^};a=${a//\$/\\$}
 		a=${a//'/\'};a=${a//\"/\"};a=${a//./\.};a=${a//\*/\*}
 		a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]};a=${a//\(/\\(};a=${a//\)/\\)}
 		a=${a//\{/\{};a=${a//\}/\}}
@@ -86,7 +106,7 @@ for a
 			fi
 		}
 		D=;IFS=$'\n'
-		for u in `history|sed -nE "s#^\s*([0-9]+)\s+$a\\$#\1#p"`
+		for u in `history|sed -nE "s&^\s*([0-9]+)\s+$a\\$&\1&p"`
 		{
 			((D))||{
 				let m=HISTCMD-u
@@ -127,7 +147,10 @@ fi
 ((F))&&break
 set --
 done
-IFS=$'\n';i=;for l in `history`
-{	[[ $l =~ ^\ *([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++)); }
+IFS=$'\n';i=
+for l in `history`
+{
+[[ $l =~ ^\ *([0-9]+)\*?[^[:graph:]]*$ ]]	&&history -d $((BASH_REMATCH[1]-i++))
+}
 unset IFS
 }
