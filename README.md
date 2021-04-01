@@ -20,8 +20,8 @@ $ h
 Show the next 25? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring)   
 
 - hit Enter then it will exit back to shell prompt   
-- or hit Up key, will show continuation of line 367 upwardly to less number, which is line 358 - 366   
-- or hit Down key, it'll show beginning of history line 1 - 13, and next Down is the continuation of line 13: line 14 - 26   
+- or hit Up key, will show continuation of line 367 upwardly to less number, which is line 342 - 366   
+- or hit Down key, it'll show beginning of history line 1 - 25, and next Down is the next 25: line 26 - 50   
 - or put in numbers such as 367 or 371-373, it will remove lines 367 or 371, 372, 373. Likewise is for reverse order entry 375-371   
 - or put in dash then a number such as -99, it will remove the last 99 lines   
 - or could even be put multi numbers in single entry line: 367-369 377, would clear such history number at once   
@@ -57,7 +57,4 @@ to alias "history" only since
 $ h   
 is entering this interactive history tidying   
 
-So don't forget to do
-$ h -w
-
-after tidying up and feeling sure it's best improved, so would be saved in ~/.bash_history before exit
+So don't forget to save in ~/.bash_history after tidying up before exit
