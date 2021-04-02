@@ -57,10 +57,10 @@ for a
 		if [ -z "$l" ] ;then
 			((l=HISTCMD-u))
 			((u=HISTCMD))
-		elif((l));then
-			((u=u?u:HISTCMD-1))
+		else
+			((u=u?u:HISTCMD))
+			((l))||l=1
 			((u<l)) &&{		m=$u;u=$l;l=$m; }
-		else	l=1
 		fi
 		let D=j+k
 		((B<u)) && let u-=D

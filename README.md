@@ -2,7 +2,7 @@ Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/
 
 Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a string segment lying in a history line.   
 
-simply type h then it'll show the latest 17 lines of shell commands e.g:   
+simply type `h` then it'll show the latest 25 lines of shell commands e.g:   
 
 $ h   
   367  pushd --help   
@@ -14,25 +14,23 @@ $ h
   373  cd ../debian/   
   374  rm .config/autostart-scripts/autostart.sh   
   375  pushd   
-  376  cp .bash_profile /usr/bin/autostart.sh   
   377  cd roxterm/   
   378  cd debian/   
   379  cat -n install   
-Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring)   
+Show the next 25? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring)   
 
-- hit Enter then it will quit back to shell prompt   
+- hit Enter then it will exit back to shell prompt   
 - or hit Up key, will show continuation of line 367 upwardly to less number, which is line 358 - 366   
 - or hit Down key, it'll show beginning of history line 1 - 13, and next Down is the continuation of line 13: line 14 - 26   
-- or put in 371-375, it will remove lines 371, 372, 373, 374, 375. Likewise is for reverse order entry 375-371   
-- or could even be put multi numbers in single entry line;   
-369 371 377, would clear history number 369, 371, and 377 at once   
+- or put in numbers such as 367 or 371-373, it will remove lines 367 or 371, 372, 373. Likewise is for reverse order entry 375-371   
+- or put in dash then a number such as -99, it will remove the last 99 lines   
+- or could even be put multi numbers in single entry line: 367-369 377, would clear such history number at once   
 - or put other keys it'll be treated as characters of string, more precisely substring of a line, any history line having that string will be removed. If it's only 1 character, that's searched for as a whole word, otherwise if it's more than a character it'll match any line containes string of those characters in any context, but this can be made as whole word search too if it's surrounded by space   
 
-If we're sure we know the number without listing the history, then another way is to put it directly in Bash CLI prompt such as:   
+If we already knew the number without listing the history, then another way is to put it directly in Bash prompt such as:   
 $ h 371-375   
 
-The shorter ways to remove a range of certain number up to the first or last, such as following:   
-$ h -375   
+The shorter ways to remove a range of certain number up to the last is just do   
 $ h 375-   
 
 will result respectively in list number 376 to 379 since all from the first to number 375 get erased and   
