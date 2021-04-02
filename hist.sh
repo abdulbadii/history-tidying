@@ -1,13 +1,13 @@
 h(){ #BEGIN h
 [[ $1 =~ ^(--help$|-[anprsw]|.) ]] &&{	history ${@#.};return;}
-C=;D=;F=1;l=17
+C=;D=;F=1;l=25
 [[ `history|head -n1` =~ ^\ *([0-9]+) ]]
-let h=t=HISTCMD-${BASH_REMATCH[1]}
+let h=T=HISTCMD-${BASH_REMATCH[1]}
 while : ;do
 if [ -z "$1" ] ;then
-	((F))&&{	history 17;F=;	 }
+	((F))&&{	history 25;F=;	 }
 	IFS='';while : ;do
-		read -sN 1 -p "`echo $'\e[44;1;37m'`Show the next 17? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring) `echo -e '\e[0m\n\r'`" m
+		read -sN 1 -p "`echo $'\e[44;1;37m'`Show the next 25? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring) `echo -e '\e[0m\n\r'`" m
 		case $m in
 		$'\x1b') #ESC
 			read -N 1 m
@@ -17,18 +17,18 @@ if [ -z "$1" ] ;then
 				echo
 				case $m in
 				A) #UP
-					if((((l+=17))>t)) ;then
-						let l-=t
-						history |head -n$((17-l))
+					if((((l+=25))>T)) ;then
+						let l-=T
+						history |head -n$((25-l))
 						history $l
 					else
-						history $l| head -n17
+						history $l| head -n25
 					fi;;
 				B) #DN
-					history $h	| head -n17
-					((((h-=17))<0)) &&{
-						history	$t| head -n$((-h))
-						let h+=t
+					history $h	| head -n25
+					((((h-=25))<0)) &&{
+						history	$T| head -n$((-h))
+						let h+=T
 					};;
 				esac
 			fi;;
@@ -54,9 +54,14 @@ for a
 	elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]] ;then
 		l=${BASH_REMATCH[1]}
 		u=${BASH_REMATCH[2]}
-		((l=l? l: 1))
-		((u=u?u:HISTCMD-1))
-		((u<l)) &&{		m=$u;u=$l;l=$m; }
+		if [ -z "$l" ] ;then
+			((l=HISTCMD-u))
+			((u=HISTCMD))
+		elif((l));then
+			((u=u?u:HISTCMD-1))
+			((u<l)) &&{		m=$u;u=$l;l=$m; }
+		else	l=1
+		fi
 		let D=j+k
 		((B<u)) && let u-=D
 		let C=u-l+1
@@ -95,22 +100,22 @@ for a
 	B=$u
 }
 [[ `history|head -n1` =~ ^\ *([0-9]+) ]]
-let t=HISTCMD-${BASH_REMATCH[1]}
+let T=HISTCMD-${BASH_REMATCH[1]}
 ((u<b))&&{	m=$b;b=$u;u=$m; }
 ((b=b>4? b-4: 1))
-if((u-D-b+3<17)) ;then
-	if((HISTCMD-b+3<17)) ;then
-		history $((l=17))
+if((u-D-b+3<25)) ;then
+	if((HISTCMD-b+3<25)) ;then
+		history $((l=25))
 	else
 		let l=HISTCMD-b+D+3
-		history $l |head -n17
+		history $l |head -n25
 	fi
-	let h=l-17
+	let h=l-25
 else
 	history $((HISTCMD-b)) |head -n7
 	echo '  '...
 	if((((l=HISTCMD-u+D+3))<7)) ;then
-		history 7;let h=t
+		history 7;let h=T
 	else
 		history $l	|head -n7
 		let h=l-7
@@ -119,14 +124,15 @@ fi
 ((F))&&break
 set --
 done
-IFS=$'\n';i=;for l in `history`
-{	[[ $l =~ ^\ *([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++)); }
-unset IFS
-((C+D))&&{ read -N 1 -p 'Save the updated history (Enter: yes)? ' o
-	if [ "$o" = $'\x0a' ];then history -w&&echo saved
+if((C+D)) ;then read -sN1 -p 'Save the modified history (Enter: yes)? ' o
+	if [ "$o" = $'\x0a' ];then history -w&&echo -n saved
 	else
-		read -N 1 -p ' Revert back the updated history (Y: yes)? ' o
-		[ "$o" = y ]&&{ history -c;history -r;}
+		read -N1 -p ' Revert back the modified history (Enter: yes)? ' o
+		[ "$o" = $'\x0a' ]&&{ history -c;history -r;}
 	fi
-}
+else
+	IFS=$'\n';i=;for l in `history`
+	{	[[ $l =~ ^\ *([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++)); }
+fi
+unset IFS
 }
