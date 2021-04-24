@@ -42,7 +42,7 @@ if [ -z "$1" ] ;then
 		esac
 	done
 fi
-unset IFS k s l b u B i j C D
+unset IFS k s l b u i j C D;B=HISTCMD
 for a
 {
 	if [[ $a =~ ^[1-9][0-9]*$ ]] ;then
@@ -51,7 +51,7 @@ for a
 		((B<u)) && let u-=D
 		history -d $u 2>/dev/null &&((++j))
 		((b=B? B: u))
-	elif [[ $a =~ ^([1-9][0-9]*)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]] ;then
+	elif [[ $a =~ ^([0-9]+)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]] ;then
 		l=${BASH_REMATCH[1]}
 		u=${BASH_REMATCH[2]}
 		if [ -z "$l" ] ;then
@@ -63,9 +63,10 @@ for a
 			((u<l)) &&{		m=$u;u=$l;l=$m; }
 		fi
 		let D=j+k
-		((B<u))&&let u-=D
+		((B<u)) && let u-=D
 		let C=u-l+1
-		while((C--));do history -d $l 2>/dev/null&&((++k))	;done
+		while((C--)) ;do history -d $l 2>/dev/null &&((++k))
+		done
 		b=$l
 	else
 		a=${a//\\/\\};a=${a//#/\#}
@@ -98,6 +99,28 @@ for a
 	fi
 	B=$u
 }
+[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
+let T=HISTCMD-${BASH_REMATCH[1]}
+((u<b))&&{	m=$b;b=$u;u=$m; }
+((b=b>4? b-4: 1))
+if((u-D-b+3<25)) ;then
+	if((HISTCMD-b+3<25)) ;then
+		history $((l=25))
+	else
+		let l=HISTCMD-b+D+3
+		history $l |head -n25
+	fi
+	let h=l-25
+else
+	history $((HISTCMD-b)) |head -25
+	echo '  '...
+	if((((l=HISTCMD-u+D+3))<25)) ;then
+		history 25;let h=T
+	else
+		history $l	|head -25
+		let h=l-25
+	fi
+fi
 ((F))&&break
 set --
 done
