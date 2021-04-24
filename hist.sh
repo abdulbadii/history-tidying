@@ -42,7 +42,7 @@ if [ -z "$1" ] ;then
 		esac
 	done
 fi
-unset IFS k s l b u i j C D;B=HISTCMD
+unset IFS k s b i j l u C D;B=HISTCMD
 for a
 {
 	if [[ $a =~ ^[1-9][0-9]*$ ]] ;then
@@ -54,17 +54,15 @@ for a
 	elif [[ $a =~ ^([0-9]+)-([1-9][0-9]*)?$ ]] || [[ $a =~ ^()-([1-9][0-9]*)$ ]] ;then
 		l=${BASH_REMATCH[1]}
 		u=${BASH_REMATCH[2]}
-		if [ -z "$l" ] ;then
-			((l=HISTCMD-u))
-			((u=HISTCMD))
+		if [ -z "$l" ] ;then ((C=u+1))
 		else
 			((u=u?u:HISTCMD))
-			((l))||l=1
+			((l=l?l:1))
 			((u<l)) &&{		m=$u;u=$l;l=$m; }
 		fi
 		let D=j+k
 		((B<u)) && let u-=D
-		let C=u-l+1
+		((C=C?C:u-l+1))
 		while((C--)) ;do history -d $l 2>/dev/null &&((++k))
 		done
 		b=$l
