@@ -63,10 +63,9 @@ for a
 			((u<l)) &&{		m=$u;u=$l;l=$m; }
 		fi
 		let D=j+k
-		((B<u)) && let u-=D
+		((B<u))&&let u-=D
 		let C=u-l+1
-		while((C--)) ;do history -d $l 2>/dev/null &&((++k))
-		done
+		while((C--));do history -d $l 2>/dev/null&&((++k))	;done
 		b=$l
 	else
 		a=${a//\\/\\};a=${a//#/\#}
@@ -92,35 +91,13 @@ for a
 			}
 			history -d $((u-D++))
 		}
-		if ! ((D)) ;then echo No history line matched. Did nothing;set --;continue 2
+		if ! ((D)) ;then echo No history line matched. Did nothing;set -;continue 2
 		elif ((D>1)) ;then echo -e and else following it, up to '\e[1;32m'$D lines have been erased'\e[m'
 		else echo has been erased
 		fi
 	fi
 	B=$u
 }
-[[ `history|head -n1` =~ ^\ *([0-9]+) ]]
-let T=HISTCMD-${BASH_REMATCH[1]}
-((u<b))&&{	m=$b;b=$u;u=$m; }
-((b=b>4? b-4: 1))
-if((u-D-b+3<25)) ;then
-	if((HISTCMD-b+3<25)) ;then
-		history $((l=25))
-	else
-		let l=HISTCMD-b+D+3
-		history $l |head -n25
-	fi
-	let h=l-25
-else
-	history $((HISTCMD-b)) |head -n7
-	echo '  '...
-	if((((l=HISTCMD-u+D+3))<7)) ;then
-		history 7;let h=T
-	else
-		history $l	|head -n7
-		let h=l-7
-	fi
-fi
 ((F))&&break
 set --
 done
