@@ -1,9 +1,9 @@
-Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to ~/.bashrc file    
+Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to `~/.bashrc` file    
 
 Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a string segment lying in a history line.   
 
 simply type `h` then it'll show the latest 25 lines of shell commands e.g:   
-
+```
 $ h   
   367  pushd --help   
   368  pushd -n debian/   
@@ -18,7 +18,7 @@ $ h
   378  cd debian/   
   379  cat -n install   
 Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out. Else: as string to erase 
-
+```
 - hit Enter then it will exit back to shell prompt   
 - or Up key, will show continuation of line 367 upwardly to less number, which is line 342 - 366   
 - or Down key, it'll show beginning of history line 1 - 25, and next Down is the next 25: line 26 - 50   
@@ -33,31 +33,24 @@ Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out. Else: 
 If we already knew the number without listing the history, then another way is to put it directly in shell/terminal prompt such as:   
 $ h 371-375   
 
-With exception number: 0,1, and 2, they'll be used to show the last 9, 17, and 34 respectively, so   
-$ h 0    
-will list the last 9 lines just like   
-$ history 9   
-will   
-  
 Upon exit it will automatically clean up all empty or space only lines   
 
-It also serves as history alias,
+It'b be also as history alias i.e.
 
-$ h --help   
+`$ h --help`   
 shows history command's helpful reference
 
-$ h -r   
+`$ h -r`   
 append to current history from file ~/.bash_history   
 
-An addition on that:
-$ h -cr   
-reload from file ~/.bash_history (i.e. clean current history up then do as above)  
+An addition to that:   
+`$ h -cr`   
+reload from file `~/.bash_history`
+(clean the current history up and then do as above)   
 
-Except to alias a mere "history" command, type period such as 
-$ h .   
-
-i.e. only list them numbered all, since
-$ h   
-will instead enter this interactive history tidying   
+Except as alias a mere `history` command, type period such as 
+`$ h .`   
+i.e. simply list them entirely numbered, since `$ h`   
+will instead enter the mentioned interactive history tidying   
 
 Do **h -w** to ensure save in ~/.bash_history after tidying up before exit
