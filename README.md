@@ -11,30 +11,27 @@ $ h
   370  debuild -i -uc -us -b   
   371  ls debuild*   
   372  ls -hs   
-  373  cd ../debian/   
+  373  pushd ~   
   374  rm .config/autostart-scripts/autostart.sh   
-  375  pushd   
-  377  cd roxterm/   
+  375  popd   
+  377  cd  
   378  cd debian/   
   379  cat -n install   
-Show the next 25? (Enter: abort, Up: from end/newer, Down: from begin, [-]n[-][n] erase by number n or range n-n, Others as deletion substring)   
+Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out. Else: as string to erase 
 
 - hit Enter then it will exit back to shell prompt   
-- or hit Up key, will show continuation of line 367 upwardly to less number, which is line 342 - 366   
-- or hit Down key, it'll show beginning of history line 1 - 25, and next Down is the next 25: line 26 - 50   
-- or put in numbers such as 367 or 371-373, it will remove lines 367 or 371, 372, 373. Likewise is for reverse order entry 375-371   
-- or put in dash then a number such as -99, it will remove the last 99 lines   
-- or could even be put multi numbers in single entry line: 367-369 377, would clear such history number at once   
-- or put other keys it'll be treated as characters of string, more precisely substring of a line, any history line having that string will be removed. If it's only 1 character, that's searched for as a whole word, otherwise if it's more than a character it'll match any line containes string of those characters in any context, but this can be made as whole word search too if it's surrounded by space   
+- or Up key, will show continuation of line 367 upwardly to less number, which is line 342 - 366   
+- or Down key, it'll show beginning of history line 1 - 25, and next Down is the next 25: line 26 - 50   
+- put number(s) such as 367, it will remove line 367
+- or such that and also number(s) range such as 367 371-373, it will remove lines 367, 371, 372, 373. Likewise is by reverse range order 375-371. 0-99 will remove such the lines    
+- the number(s) range if it s high end is the latest command, it can be briefed by a dash(-) e.g. 371-, it will remove lines 371, 372 ... up to 379
+- put a dash then a number such as -5, it will remove the 5th line ordered from the latest command history   
+- put two dash in a row then number such as --5, it will remove the latest 5 lines of command history   
+- or put others it'll be treated as characters of substring of a command line string as long as having 3 characters or more, any history line having that string will be removed, but if an end is adjacent with space, that end will be treated anchored as the first or last string to search. So surround it with space will turn it to be exact string to match instead of substring
+- on such above with 1 or 2 printable characters, it will be assumed to find that/those exact whole word in a line, but this can be made as substring search too if it's surrounded by space so the opposite of above   
 
-If we already knew the number without listing the history, then another way is to put it directly in Bash prompt such as:   
+If we already knew the number without listing the history, then another way is to put it directly in shell/terminal prompt such as:   
 $ h 371-375   
-
-The shorter ways to remove a range of certain number up to the last is just do   
-$ h 375-   
-
-will result respectively in list number 376 to 379 since all from the first to number 375 get erased and   
-list of number 1 up to 374 as the number 375 to the last get cleared   
 
 With exception number: 0,1, and 2, they'll be used to show the last 9, 17, and 34 respectively, so   
 $ h 0    
@@ -42,19 +39,25 @@ will list the last 9 lines just like
 $ history 9   
 will   
   
-Upon exit it will automatically clean up all empty or space-only-content lines   
+Upon exit it will automatically clean up all empty or space only lines   
 
-It also serves as history alias, so   
+It also serves as history alias,
 
 $ h --help   
 shows history command's helpful reference
 
 $ h -r   
-reload from file ~/.bash_history   
-Except it needs to be   
-$ h .   
-to alias "history" only since   
-$ h   
-is entering this interactive history tidying   
+append to current history from file ~/.bash_history   
 
-So don't forget to save in ~/.bash_history after tidying up before exit
+An addition on that:
+$ h -cr   
+reload from file ~/.bash_history (i.e. clean current history up then do as above)  
+
+Except to alias a mere "history" command, type period such as 
+$ h .   
+
+i.e. only list them numbered all, since
+$ h   
+will instead enter this interactive history tidying   
+
+Do **h -w** to ensure save in ~/.bash_history after tidying up before exit

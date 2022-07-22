@@ -1,10 +1,9 @@
 h(){ #BEGIN h
 [[ $1 = -cr ]] &&{ history -c;history -r;return;}
-[[ $1 =~ ^--help$|^-[anprsw] ]] &&{ history ${@#.};return;}
+[[ $1 =~ ^--help$|^-[anprsw]|^. ]] &&{ history ${@#.};return;}
 C=;D=;F=1;l=25
 [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
-let h=T=HISTCMD-${BASH_REMATCH[1]}
-let off=BASH_REMATCH[1]-1
+let h=T=HISTCMD-BASH_REMATCH[1]
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
@@ -78,16 +77,20 @@ for a
   a=${a//\//\\/};a=${a//\"/\\\"};a=${a//./\\.};a=${a//\*/\\*}
 		a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]};a=${a//\(/\\(};a=${a//\)/\\)}
   a=${a//\{/\\{};a=${a//\}/\\'}'};a=${a//\|/\\|};a=${a//\^/\\^}
-		((${#a}>2)) &&{
-			if [[ $a =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then a=.\*$a.\*
-			elif [[ $a =~ ^[[:space:]]+.*[[:graph:]]+$ ]] ;then a=$a.\*
-			elif [[ $a =~ ^[[:graph:]].*[[:space:]]+$ ]] ;then	a=.\*$a ;fi
-		}
+  echo =$a=
+  return
+		if ((${#a}>2)) ;then
+			if [[ $a =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then a=.*$a.*
+			elif [[ $a =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then a=${BASH_REMATCH[1]}.*
+			elif [[ $a =~ ^([[:graph:]].*)[[:space:]]+$ ]] ;then	a=.*${BASH_REMATCH[1]}
+			elif [[ $a =~ ^[[:space:]](.*)[[:space:]]+$ ]] ;then	a=${BASH_REMATCH[1]};fi
+		elif [[ $a =~ ^[[:space:]].*[[:space:]]+$ ]] ;then	a=.*${BASH_REMATCH[1]}.*
+  fi
 		D=;IFS=$'\n'
 		for u in `history|sed -nE "s/^\s+([0-9]+)\s+$a$/\1/p"`
 		{
 			((D))||{
-				let m=HISTCMD-u-off
+				let m=HISTCMD-u-BASH_REMATCH[1]+1
 				echo -e Line:'\e[41;1;37m'`history $m|head -1`'\e[40;1;32m'
 				b=$u
 			}
