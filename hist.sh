@@ -1,10 +1,10 @@
 h(){ #BEGIN h
-[[ $1 =~ ^-cr|^rc ]] &&{ history -c;history -r;return;}
-[[ $1 =~ ^--help$|^-[anprsw]|^. ]] &&{ history ${@#.};return;}
-C=;D=;F=1;l=25
+[[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
+[[ $1 =~ ^--help$|^-[anprsw]$|^\. ]] &&{ history ${@#.};return;}
+C=;D=;F=1;L=25
 [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
-let off=BASH_REMATCH[1]
-let h=T=HISTCMD-off
+let off=BASH_REMATCH[1]-1
+let U=T=HISTCMD-off
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
@@ -18,50 +18,52 @@ if [ -z "$1" ] ;then
 				read -N 1 m; echo
 				case $m in
 				A) #UP
-					if((((l+=25))>T)) ;then
-						let l-=T
-						history |head -n$((25-l))
-						history $l
+     U=$L
+					if((((L+=25))>T)) ;then
+						let L-=T
+						history |head -$((25-L))
+						history $L
 					else
-						history $l| head -n25
+						history $L| head -25
 					fi;;
 				B) #DN
-					history $h	| head -n25
-					((((h-=25))<0)) &&{
-						history	$T| head -n$((-h))
-						let h+=T
-					};;
+     L=$U
+					history $U	| head -25
+					((((U-=25))<0)) &&{
+						history| head -$((-U))
+						let U+=T
+					}
 				esac
 			fi;;
 		$'\x0a')	break 2;;
 		*)
 			read -rei "$m" m
-			[[ ! $m =~ ^[1-9][0-9]*-?([1-9][0-9]*)?$|^--?[1-9][0-9]*$ ]] &&{
+			[[ ! $m =~ ^[1-9][0-9]*-?([1-9][0-9]*)?$|^--?[1-9][0-9]*(-[0-9])?$ ]] &&{
     m=${m//\\/\\\\};m=\"${m//\$/\\\$}\";}
    eval set -- "$m"
 			break
 		esac
 	done
 fi
-unset IFS k s b i j l u C D;B=$HISTCMD
-for a
+unset IFS s b i j k l u C D
+for a in "$@"
 {
- if [[ $a =~ ^(-)?(-[1-9][0-9]*)$ ]] ;then
-  b=${BASH_REMATCH[2]}
+ B=$HISTCMD
+ if [[ $a =~ ^(-)?(-[1-9][0-9]*)(-[0-9])?$ ]] ;then
+  let b=BASH_REMATCH[2]-U
   if [ "${BASH_REMATCH[1]}" ] ;then
-   u=$b
-   while((u)) ;do history -d $((u++)) 2>/dev/null &&((++k)) ;done
+   for i in `eval echo {$b..$((BASH_REMATCH[3]-1-U))}` ;{ history -d $i 2>/dev/null &&((++k));}
    let b+=b+B
 		else
    history -d $b
    let b+=B
   fi
 	elif [[ $a =~ ^[1-9][0-9]*$ ]] ;then
-		u=$a
+		l=$a
 		let D=j+k
-		((B<u)) && let u-=D
-		history -d $u 2>/dev/null &&((++j))
-		((b=B? B: u))
+		((B<l)) && let l-=D
+		history -d $l 2>/dev/null &&((++j))
+		((b=B? B: l))
 	elif [[ $a =~ ^([0-9]+)-([1-9][0-9]*)?$ ]] ;then
 		l=${BASH_REMATCH[1]}
 		u=${BASH_REMATCH[2]}
@@ -128,7 +130,7 @@ fi
 set --
 done
 if((C+D)) ;then read -sN1 -p 'Save the modified history (Enter: yes)? ' o
-	if [ "$o" = $'\x0a' ];then history -w&&echo -n saved
+	if [ "$o" = $'\x0a' ];then history -w&&echo saved
 	else
 		read -N1 -p ' Revert back the modified history (Enter: yes)? ' o
 		[ "$o" = $'\x0a' ]&&{ history -c;history -r;}
