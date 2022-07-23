@@ -1,9 +1,10 @@
 h(){ #BEGIN h
-[[ $1 = -cr ]] &&{ history -c;history -r;return;}
+[[ $1 =~ ^-cr|^rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprsw]|^. ]] &&{ history ${@#.};return;}
 C=;D=;F=1;l=25
 [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
-let h=T=HISTCMD-BASH_REMATCH[1]
+let off=BASH_REMATCH[1]
+let h=T=HISTCMD-off
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
@@ -35,9 +36,9 @@ if [ -z "$1" ] ;then
 		$'\x0a')	break 2;;
 		*)
 			read -rei "$m" m
-			[[ ! $m =~ ^[1-9][0-9]*-?([1-9][0-9]*)?$|^--?[1-9][0-9]*$ ]] &&
-				m=\"${m//\\/\\\\}\"
-			eval set -- $m
+			[[ ! $m =~ ^[1-9][0-9]*-?([1-9][0-9]*)?$|^--?[1-9][0-9]*$ ]] &&{
+    m=${m//\\/\\\\};m=\"${m//\$/\\\$}\";}
+   eval set -- "$m"
 			break
 		esac
 	done
@@ -75,10 +76,9 @@ for a
   b=$l
 	else
   a=${a//\//\\/};a=${a//\"/\\\"};a=${a//./\\.};a=${a//\*/\\*}
-		a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]};a=${a//\(/\\(};a=${a//\)/\\)}
-  a=${a//\{/\\{};a=${a//\}/\\'}'};a=${a//\|/\\|};a=${a//\^/\\^}
-  echo =$a=
-  return
+		a=${a//\?/\\?};a=${a//\[/\\[};a=${a//\]/\\]}
+  a=${a//\|/\\|};a=${a//\^/\\^};a=${a//\(/\\(};a=${a//\)/\\)}
+  a=${a//\{/\\{};a=${a//\}/\\'}'};a=${a//\$/\\\$}
 		if ((${#a}>2)) ;then
 			if [[ $a =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then a=.*$a.*
 			elif [[ $a =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then a=${BASH_REMATCH[1]}.*
@@ -90,7 +90,7 @@ for a
 		for u in `history|sed -nE "s/^\s+([0-9]+)\s+$a$/\1/p"`
 		{
 			((D))||{
-				let m=HISTCMD-u-BASH_REMATCH[1]+1
+				let m=HISTCMD-u-off+1
 				echo -e Line:'\e[41;1;37m'`history $m|head -1`'\e[40;1;32m'
 				b=$u
 			}
