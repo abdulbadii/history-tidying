@@ -1,10 +1,10 @@
 h(){ #BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprsw]$|^\. ]] &&{ history ${@#.};return;}
-C=;D=;F=1;L=25
 [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
 let off=BASH_REMATCH[1]-1
-let U=T=HISTCMD-off
+let T=HISTCMD-off
+C=;D=;F=1;L=25;U=0
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
@@ -46,9 +46,10 @@ if [ -z "$1" ] ;then
 	done
 fi
 unset IFS s b i j k l u C D
+[[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]];let off=BASH_REMATCH[1]-1
 for a in "$@"
 {
- B=$HISTCMD
+ let B=HISTCMD-off
  if [[ $a =~ ^(-)?(-[1-9][0-9]*)(-[0-9])?$ ]] ;then
   let b=BASH_REMATCH[2]-U
   if [ "${BASH_REMATCH[1]}" ] ;then
@@ -89,11 +90,10 @@ for a in "$@"
 		elif [[ $a =~ ^[[:space:]].*[[:space:]]+$ ]] ;then	a=.*${BASH_REMATCH[1]}.*
   fi
 		D=;IFS=$'\n'
-		for u in `history|sed -nE "s/^\s+([0-9]+)\s+$a$/\1/p"`
+		for u in `history|sed -nE "s/^\s+([0-9]+)\*?\s+$a$/\1/p"`
 		{
 			((D))||{
-				let m=HISTCMD-u-off+1
-				echo -e Line:'\e[41;1;37m'`history $m|head -1`'\e[40;1;32m'
+				echo -e Line:'\e[41;1;37m'`history $((B-u))|head -1`'\e[40;1;32m'
 				b=$u
 			}
 			history -d $((u-D++))
