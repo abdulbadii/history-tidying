@@ -30,7 +30,8 @@ Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else:
 - put two dash in a row then number such as --5, it will remove the latest 5 lines of command history   
 - likewise above with addition -number such as --5-2 to except the last 2 lines from the latest 5 lines removal
 - or put others it'll be treated as characters of substring of a command line string as long as having 3 characters or more, any history line having that string will be removed, but if an end is adjacent with space, that end will be treated anchored as the first or last string to search. So surround it with space will turn it to be exact string to match instead of substring
-- on such above with 1 or 2 printable characters, it will be assumed to find that/those exact whole word in a line, but this can be made as substring search too if it's surrounded by space so the opposite of above   
+- likewise above but it's only 1 or 2 printable characters, it will be assumed to find that/those exact whole word in a line, but can be made as a substring search too if it's surrounded by space so the opposite of above   
+- likewise input of a whole or sub string above if it's containing `...` (three period in a row) it'd be just most OS `\*` wildcard property    
 
 If one already knew the number or the string, then he can put it directly in shell/terminal prompt such as:   
 `$ h 371-375 367`   
