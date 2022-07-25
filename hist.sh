@@ -3,7 +3,7 @@ h(){ #BEGIN h
 [[ $1 =~ ^--help$|^-[anprsw]$|^\. ]] &&{ history ${@#.};return;}
 [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
 let B=HISTCMD-BASH_REMATCH[1]+1
-C=;D=;F=1;L=25;U=0
+did=;C=;D=;F=1;L=25;U=0
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
@@ -47,35 +47,35 @@ fi
 unset IFS s b i j k l u C D W
 for a in "$@"
 {
- did=1
- if [[ $a =~ ^(-)?-([1-9][0-9]*)(-[0-9])?$ ]] ;then
-  b=${BASH_REMATCH[2]}
-  ((b>25)) || ((((b+=U))>B)) &&{ echo invalid number range;set --;continue 2;}
-  if [ "${BASH_REMATCH[1]}" ] ;then
-   for i in `eval echo {-$b..$((BASH_REMATCH[3]-1-U))}` ;{ history -d $i 2>/dev/null &&((++k));}
-		else
-   history -d -$b ;fi
-  if ((b<8)) ;then history 25; else history $((b+7)) |head -25 ;fi
-  set --;continue 2
+ if [[ $a =~ ^(-)?-([1-9][0-9]*)(-([1-9]))?$ ]] ;then
+  d=${BASH_REMATCH[2]}
+  e=${BASH_REMATCH[4]}
+  ((e? e>=d :0)) || ((d>25)) || ((((d+=U))>B)) &&{
+   echo $d or $e is invalid invalid number range;set --;continue 2;}
+  ((e)) || [[ ${BASH_REMATCH[1]} ]] || let e=d-1
+  for i in `eval echo {$d..$((e+U+1))}` ;{ history -d -$i 2>/dev/null;}
+  if ((d<14)) ;then history 25; else history $((d+12)) |head -25 ;fi
+  did=1;set --;continue 2
 	elif [[ $a =~ ^[1-9][0-9]*$ ]] ;then
-		l=$a
+		u=$a
 		let D=j+k
-		((B<l)) &&{
-   !((D)) &&{ echo $l is invalid number range; return;}
-   let l-=D
+		((u>HISTCMD)) &&{
+   !((D)) &&{ echo $u is invalid number range;continue 2;}
+   let u-=D
   }
 		history -d $l 2>/dev/null &&((++j))
-		((b=B? B: l))
+		did=1;((b=B? B: u))
 	elif [[ $a =~ ^([0-9]+)-([1-9][0-9]*)?$ ]] ;then
 		l=${BASH_REMATCH[1]}
+  ((l=l?l:1))
 		u=${BASH_REMATCH[2]}
   ((u=u?u:HISTCMD))
-  ((l=l?l:1))
   ((u<l)) &&{		m=$u;u=$l;l=$m; }
+  ((u>HISTCMD)) || ((l==u)) &&{ echo $l and/or $u is invalid number range;continue 2;}
   let D=j+k
-  ((B<u)) &&{
-   !((D)) &&{ echo $l is invalid number range; return;}
+  ((u>B)) &&{
    let u-=D
+   !((D)) || ((u<B)) &&{ echo $u is invalid number range;continue 2;}
   }
   let did=C=u-l+1
   while((C--)) ;do history -d $l 2>/dev/null &&((++k));done
@@ -106,13 +106,13 @@ for a in "$@"
 		}
 		! ((D)) &&{ echo No history line match. Did nothing;set -;continue 2;}
   ((D>1)) &&{ echo -ne "and others afterward, total to $D lines ";}
-		echo -e has been erased'\e[m'
+		echo -e has been erased'\e[m' ;did=1
 	fi
 	B=$u
  [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
  let B=HISTCMD-BASH_REMATCH[1]+1
 }
-let C=B-b
+let C=HISTCMD-b
 ((u<b))&&{	m=$b;b=$u;u=$m; }
 ((b=b>4? b-4: 1))
 if((u-D-b+3<25)) ;then
@@ -137,14 +137,14 @@ fi
 set --
 done
 if((did)) ;then read -sN1 -p 'Save the modified history (Enter: yes)? ' o
-	if [ "$o" = $'\x0a' ];then history -w&&echo ..saved
+	if [ "$o" = $'\x0a' ];then
+  history -w&&echo ..saved
+  IFS=$'\n';i=;for l in `history`
+  {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++)); }
 	else
 		read -N1 -p ' Revert back the modified history (Enter: yes)? ' o
 		[ "$o" = $'\x0a' ]&&{ history -c;history -r;}
 	fi
- did=
 fi
-IFS=$'\n';i=;for l in `history`
-{	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++)); }
 unset IFS
 }
