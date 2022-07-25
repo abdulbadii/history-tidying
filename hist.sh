@@ -1,6 +1,6 @@
 h(){ #BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
-[[ $1 =~ ^--help$|^-[anprsw]$|^\. ]] &&{ history ${@#.};return;}
+[[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
 [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
 let B=HISTCMD-BASH_REMATCH[1]+1
 did=;C=;D=;F=1;L=25;U=0
@@ -51,7 +51,7 @@ for a in "$@"
   d=${BASH_REMATCH[2]}
   e=${BASH_REMATCH[4]}
   ((e? e>=d :0)) || ((d>25)) || ((((d+=U))>B)) &&{
-   echo $d or $e is invalid invalid number range;set --;continue 2;}
+   echo $d or $e is invalid number range;set --;continue 2;}
   ((e)) || [[ ${BASH_REMATCH[1]} ]] || let e=d-1
   for i in `eval echo {$d..$((e+U+1))}` ;{ history -d -$i 2>/dev/null;}
   if ((d<14)) ;then history 25; else history $((d+12)) |head -25 ;fi
@@ -104,8 +104,8 @@ for a in "$@"
 			}
 			history -d $((u-D++))
 		}
-		! ((D)) &&{ echo No history line match. Did nothing;set -;continue 2;}
-  ((D>1)) &&{ echo -ne "and others afterward, total to $D lines ";}
+		! ((D)) &&{ echo No history line match. Did nothing;set --;continue 2;}
+  ((D>1)) && echo -ne "and others afterward, total to $D lines "
 		echo -e has been erased'\e[m' ;did=1
 	fi
 	B=$u
