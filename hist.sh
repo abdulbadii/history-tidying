@@ -108,7 +108,7 @@ for a in "$@"
   read -N1 -p "Delete $D line(s) above from command history? (Enter: yes Else: no) " h
   [[ $h = $'\xa' ]] ||{ echo;set --;continue 2;}
   for i	in `eval echo {$((D-1))..0}` ;{ history -d ${ln[i]} 2>/dev/null;}
-  echo -e "Finish the $D line(s) deletion\e[m";did=1
+  echo -e "Finished $D line(s) deletion\e[m";did=1
 	fi
 	B=$u
  [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
