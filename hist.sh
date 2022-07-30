@@ -1,12 +1,12 @@
 h(){ # BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
-[[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
-((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
 F=1;L=25;U=0;did=
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
+ [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
+ ((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
 	IFS='';while : ;do
 		read -sN 1 -p "`echo $'\e[44;1;37m'`Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out. Else: as string to erase `echo -e '\e[0m\n\r'`" m
 		case $m in
@@ -38,11 +38,11 @@ if [ -z "$1" ] ;then
 		*)   			read -rei "$m" m; break
 		esac
 	done
+ m=${m//\\/\\\\}
+ eval set -- \"${m//\"/\\\"}\"
 fi
 unset IFS b i j k l u Z D E n s t ln
-m=${m//\\/\\\\}
-eval set -- \"${m//\"/\\\"}\"
-i=;for m ;{
+for m ;{
  let ++i
  if [[ $m =~ ^-?-?[0-9]+-?[0-9]*$ ]];then n=$m\ $n ;else t=${*:i} ;break;fi
 }
@@ -51,42 +51,46 @@ for n ;{
  if [[ $n =~ ^([0-9]+)(-([1-9][0-9]*)?)?$ ]];then
   let l=u=BASH_REMATCH[1]
   ((l<OF)) &&{ echo $l is less than history start $OF, changed to be it;l=$OF;}
-  ((l=u=l?l:1))
-  [[ ${BASH_REMATCH[2]} ]] && u=${BASH_REMATCH[3]:-$HISTCMD}
+  ((l=u=l?l:1));be='one line was'
+  [[ ${BASH_REMATCH[2]} ]] &&{
+   u=${BASH_REMATCH[3]:-$HISTCMD}
+   be='lines were'
+  }
   ((u<l)) &&{ t=$u;u=$l;l=$t; }
-  ((u>HISTCMD)) &&{ echo $l-$u is invalid number range;continue;}
+  ((u>HISTCMD)) &&{ echo $u is beyond range;continue;}
+  echo -en '\e[41;1;37m'
+  history $((1+HISTCMD-l)) | head -$((u-l+1))
+  echo -e "\e[40;1;32mThese $be deleted\e[m"
   for i in `eval echo {$u..$l}` ;{
    history -d $i 2>/dev/null
-  }
-  echo -en "\e[41;1;37mDeleted line $l ";((u>l)) && echo -en to line $u;echo -e '\e[m';did=1
-  ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
-  history $LO | head -$lo
-  echo -e "  \e[1;32m   The deletion by line number $n was here.......\e[m"
-  ((H=1+HISTCMD-l))
-  history $H | head -$((H>13? 13: H))
+  };did=1
  else
-  [[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
-  ((e=BASH_REMATCH[3] ? ${BASH_REMATCH[4]:-1}+1 :1))
-  echo -en '\e[41;1;37m'
+  e=;[[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
   if((d=BASH_REMATCH[2])) ;then
+   ((BASH_REMATCH[3])) && e=${BASH_REMATCH[4]:-1}
    ((l=1+HISTCMD-((D=d+U))))
-   ((e>=d)) &&{ echo $e: invalid value, use a dash such -$d to delete line $l only;set --;continue;}
-   echo -e Deleted the last $d lines but the last $((e-1)) i.e. lines $l-$((u=1+HISTCMD-((E=e+U))))'\e[m'
+   ((e>=d-1)) &&{ echo $e: invalid value, use a dash such -$d to delete line $l only;set --;continue;}
+   let s=d-e++
+   ((E=e+U))
+   be='lines were'
   else
    ((d=${BASH_REMATCH[1]:-1}))
-   echo -e Deleted the line $d from the latest i.e. line $((u=l=1+HISTCMD-((E=D=d+U))))'\e[m'
+   ((l=1+HISTCMD-((E=D=d+U))))
+   s=1;be='one line was'
   fi
   ((d>25)) || ((D>B)) &&{ echo $d: out of list range;set --;continue;}
+  echo -en '\e[41;1;37m'; history $d | head -$s ;echo -en '\e[m'
   for i in `eval echo {$D..$E}`
   {
    history -d -$i 2>/dev/null
   };did=1
-  ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
-  history $LO | head -$lo
-  echo -e "  \e[1;32m   Some line(s) deleted by $n was/were here.......\e[m"
-  ((H=1+HISTCMD-l))
-  history $H | head -$((H>13? 13: H))
+  echo -e "\e[1;32mThese $be deleted\e[m"
  fi
+ ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
+ history $LO | head -$lo
+ echo -e "  \e[1;32m   Here's $be deleted by '$n' command.......\e[m"
+ ((H=1+HISTCMD-l))
+ history $H | head -$((H>13? 13: H))
 }
 [[ $t ]] &&{
  s=${t//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
