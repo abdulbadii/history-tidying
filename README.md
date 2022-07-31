@@ -19,19 +19,19 @@ $ h
   379  cat -n install   
 Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else: as string to erase 
 ```
-- hit Enter then it will exit back to shell prompt   
-- or Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
+- hit Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
 - or Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
-- put number(s) such as 367, it will remove line 367
-- or such that and followed by number(s) range such as 367 371-373, it will remove lines 367, 371, 372, 373, it doesn't matter on reverse range order 375-371 or e.g: 99-0 will remove the lines 1 to 99   
-- the number(s) range if it s high end is all the lines up to the latest one, it can be briefed by a dash(-) e.g. 371-, it will remove lines 371, 372 ... up to 379
-- put in --number or --number-number form is relative to lines currently being shown, for these:
-- put a dash then a number such as -5, it will remove the 5th line ordered from the latest command history   
-- put two dash in a row then number such as --5, it will remove the latest 5 lines of command history   
-- likewise above with addition -number such as --5-2 to except the last 2 lines from the latest 5 lines removal
+- or Enter then it will go out back to shell prompt   
+- put number(s) such as 367, it will remove line 367 or such then followed by number range such as 367 371-373, it will remove lines 367, 371, 372, 373, reverse range boundary such as 375-371 doesn't matter, but note that the **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously. If the number(s) range's high limit is the latest one, a dash (-) can be put instead. **371-** it will remove lines 371, 372 ... up to 379   
+- put in such --number or --number-number, it will delete the last line(s) relative to the lines currently being shown, for example:   
+- put a dash then a number: -5, will remove the 5th line ordered from the latest lines currently being shown   
+- put two dash in a row then number: --5, will remove the latest 5 lines to lines currently being shown
+- likewise above with addition -number to except the last that number lines, e.g. --5-2 remove the latest 5 lines but the latest 2 lines
 - or put others it'll be treated as characters of substring of a command line string as long as having 3 characters or more, any history line having that string will be removed, but if an end is adjacent with space, that end will be treated anchored as the first or last string to search. So surround it with space will turn it to be exact string to match instead of substring
 - likewise above but it's only 1 or 2 printable characters, it will be assumed to find that/those exact whole word in a line, but can be made as a substring search too if it's surrounded by space so the opposite of above   
-- likewise input of a whole or sub string above if it's containing `...` (three period in a row) it'd be just most OS `\*` wildcard property    
+- if input character with `...` (three period in a row) it becomes just a most OS' `\*` wildcard character    
+- if input character with `.` (single period) it becomes just a most OS' `\?` wildcard character    
+- It can be as the shell prompt (termed as readline) by putting a space first
 
 If one already knew the number or the string, then he can put it directly in shell/terminal prompt such as:   
 `$ h 371-375 367`   

@@ -5,10 +5,9 @@ F=1;L=25;U=0;did=
 while : ;do
 if [ -z "$1" ] ;then
 	((F))&&{	history 25;F=;	 }
- [[ `history|head -1` =~ ^[[:space:]]*([0-9]+) ]]
- ((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
+ [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]];((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
 	IFS='';while : ;do
-		read -sN 1 -p "`echo $'\e[44;1;37m'`Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out. Else: as string to erase `echo -e '\e[0m\n\r'`" m
+		read -sN 1 -p "`echo $'\e[44;1;37m'`Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out, Else: as substring `echo -e '\e[m\n\r'`" m
 		case $m in
 		$'\x1b') # \e ESC
 			read -N 1 m
@@ -30,8 +29,7 @@ if [ -z "$1" ] ;then
 					history $U	| head -25
 					((((U-=25))<0)) &&{
 						history| head -$((-U))
-						let U+=B
-					}
+						let U+=B ;}
 				esac
 			fi;;
 		$'\xa')	break 2;;
@@ -50,7 +48,7 @@ set -- $n
 for n ;{
  if [[ $n =~ ^([0-9]+)(-([1-9][0-9]*)?)?$ ]];then
   let l=u=BASH_REMATCH[1]
-  ((l<OF)) &&{ echo $l is less than history start $OF, changed to be it;l=$OF;}
+  ((l<OF)) &&{ echo $l is less than history start $OF, give it as $OF;l=$OF;}
   ((l=u=l?l:1));be='one line was'
   [[ ${BASH_REMATCH[2]} ]] &&{
    u=${BASH_REMATCH[3]:-$HISTCMD}
@@ -116,17 +114,16 @@ for n ;{
  ! ((Z)) &&{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
  echo -en '\e[40;1;32m'
  read -N1 -p "Delete $Z line(s) above from command history? (Enter: yes Else: no) " h
- let u=ln[--Z]
  [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
+ let u=-Z+ln[--Z]
  unset IFS
  for ((i=Z; i>=0; i--)){
-  history -d ${ln[i]} 2>/dev/null
-  let u-- ;}
+  history -d ${ln[i]} 2>/dev/null ;}
  echo -e "Finished deleting $((Z+1)) lines all above \e[m";did=1
  ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
  history $LO | head -$lo
- echo -e "  \e[1;32m   Some line(s) deleted having string \e[41m$t\e[40m was/were here.......\e[m"
- ((H=1+HISTCMD-u))
+ echo -e "\e[40;1;32m     .......Here's the deleted lines having string \e[41;1;37m$t\e[m"
+ ((H=HISTCMD-u))
  history $H | head -$((H>13? 13: H))
 }
 ((F))&&break
