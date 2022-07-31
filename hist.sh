@@ -56,15 +56,14 @@ for n ;{
   }
   ((u<l)) &&{ t=$u;u=$l;l=$t; }
   ((u>HISTCMD)) &&{ echo $u is beyond range;continue;}
-  echo -en '\e[41;1;37m'
-  history $((1+HISTCMD-l)) | head -$((u-l+1))
+  echo -en '\e[41;1;37m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
   echo -e "\e[40;1;32mThese $be deleted\e[m"
   for i in `eval echo {$u..$l}` ;{
    history -d $i 2>/dev/null
   };did=1
  else
-  e=;[[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
-  if((d=BASH_REMATCH[2])) ;then
+  [[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
+  e=;if((d=BASH_REMATCH[2])) ;then
    ((BASH_REMATCH[3])) && e=${BASH_REMATCH[4]:-1}
    ((l=1+HISTCMD-((D=d+U))))
    ((e>=d-1)) &&{ echo $e: invalid value, use a dash such -$d to delete line $l only;set --;continue;}
@@ -119,7 +118,7 @@ for n ;{
  unset IFS
  for ((i=Z; i>=0; i--)){
   history -d ${ln[i]} 2>/dev/null ;}
- echo -e "Finished deleting $((Z+1)) lines all above \e[m";did=1
+ echo -e "Finished deleting all $((Z+1)) lines above \e[m";did=1
  ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
  history $LO | head -$lo
  echo -e "\e[40;1;32m     .......Here's the deleted lines having string \e[41;1;37m$t\e[m"
