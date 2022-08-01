@@ -19,18 +19,18 @@ $ h
   379  cat -n install   
 Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else: as string to erase 
 ```
-- hit Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
-- or Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
-- or Enter then it will go out back to shell prompt   
-- put number(s) such as 367, it will remove line 367 or such then followed by number range such as 367 371-373, it will remove lines 367, 371, 372, 373, reverse range boundary such as 375-371 doesn't matter, but note that the **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously. If the number(s) range's high limit is the latest one, a dash (-) can be put instead. **371-** it will remove lines 371, 372 ... up to 379   
+- Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
+- Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
+- Enter key will go out back to shell prompt   
+- put number(s) such as 367, it will remove line 367 or such then followed by number range such as 367 371-373, it will remove lines 367, 371, 372, 373, reverse range boundary such as 375-371 doesn't matter, but note the requirement: the **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously. If the number(s) range's high limit is the latest one, a dash (-) can be put instead. **371-** it will remove lines 371, 372 ... up to 379   
 - put in such --number or --number-number, it will delete the last line(s) relative to the lines currently being shown, for example:   
-- put a dash then a number: -5, will remove the 5th line ordered from the latest lines currently being shown   
-- put two dash in a row then number: --5, will remove the latest 5 lines to lines currently being shown
-- likewise above with addition -number to except the last that number lines, e.g. --5-2 remove the latest 5 lines but the latest 2 lines
-- or put others it'll be treated as characters of substring of a command line string as long as having 3 characters or more, any history line having that string will be removed, but if an end is adjacent with space, that end will be treated anchored as the first or last string to search. So surround it with space will turn it to be exact string to match instead of substring
-- likewise above but it's only 1 or 2 printable characters, it will be assumed to find that/those exact whole word in a line, but can be made as a substring search too if it's surrounded by space so the opposite of above   
-- if input character with `...` (three period in a row) it becomes just a most OS' `\*` wildcard character    
-- if input character with `.` (single period) it becomes just a most OS' `\?` wildcard character    
+- put a dash then a number: -5, will remove the 5th line ordered from the latest lines being shown now. single dash means -1 which will remove the last line    
+- put two dash in a row then number: --5, will remove the last 5 lines relative to lines being shown now   
+- likewise above with addition -number to except the last that number lines, e.g. --5-2 remove the last 5 lines but the latest 2 lines, --5- will remove the last 5 lines but the last line   
+- or put anything else, it'll be treated as the characters of substring of a command line string as long as it has at least 3 characters. Any history line having that string will be removed, but if the left/right end is made adjacent with space, that end will be anchored as the first/last string to search, so surrounding it with spaces will turn it to be exact string to match instead of substring   
+- likewise above but it has only 1 or 2 printable characters, it will be assumed to find the string as exact i.e. whole word of line. Alternatively it can be made as a substring search if it's surrounded by space so the opposite of above   
+- if input character with `...` (three period in a row) it becomes just OS shell `\*` wildcard character    
+- if input character with `.` (single period) it becomes just OS shell `\?` wildcard character    
 - It can be as the shell prompt (termed as readline) by putting a space first
 
 If one already knew the number or the string, then he can put it directly in shell/terminal prompt such as:   
@@ -46,14 +46,16 @@ shows history command's helpful reference
 `$ h -r`   
 append to current history from file ~/.bash_history   
 
-An addition to history option is:   
-`$ h -cr`   
-reload from file `~/.bash_history`
-(clean the current history up and then do as above)   
+An addition to history options, there is:   
 
-Except as alias a mere `history` command, type period such as 
+`$ h -cr`   
+reload history from file `~/.bash_history`
+(clean the current history up and then do as previous above)   
+
+Except the mere `history` command itself as typing h <enter> will get into this interactive history tidying   
+
+So it needs a period such as 
 `$ h .`   
-i.e. simply list them entirely numbered, since `$ h`   
-will instead enter the mentioned interactive history tidying   
+to simply list numbered command history entirely
 
 Do **h -w** to ensure save in ~/.bash_history after tidying up before exit

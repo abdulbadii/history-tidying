@@ -11,7 +11,7 @@ if [ -z "$1" ] ;then
 		case $m in
 		$'\x1b') # \e ESC
 			read -N 1 m
-			if [[ $m != [ ]] ;then return
+			if [[ $m != [ ]] ;then history -c;history -r;return
 			else
 				read -N 1 m; echo
 				case $m in
@@ -37,7 +37,7 @@ if [ -z "$1" ] ;then
 		esac
 	done
  m=${m//\\/\\\\}
- eval set -- \"${m//\"/\\\"}\"
+ eval set -- "${m//\"/\\\"}"
 fi
 unset IFS b i j k l u Z D E n s t ln
 for m ;{
@@ -46,30 +46,29 @@ for m ;{
 }
 set -- $n
 for n ;{
+ [[ $n != $1 ]] && echo -e '\e[40;1;32mThen:\e[m'
  if [[ $n =~ ^([0-9]+)(-([1-9][0-9]*)?)?$ ]];then
   let l=u=BASH_REMATCH[1]
   ((l<OF)) &&{ echo $l is less than history start $OF, give it as $OF;l=$OF;}
   ((l=u=l?l:1));be='one line was'
   [[ ${BASH_REMATCH[2]} ]] &&{
    u=${BASH_REMATCH[3]:-$HISTCMD}
-   be='lines were'
+   be="$((u-l+1)) lines were"
   }
   ((u<l)) &&{ t=$u;u=$l;l=$t; }
   ((u>HISTCMD)) &&{ echo $u is beyond range;continue;}
   echo -en '\e[41;1;37m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
-  echo -e "\e[40;1;32mThese $be deleted\e[m"
   for i in `eval echo {$u..$l}` ;{
    history -d $i 2>/dev/null
   };did=1
- else
+ else  e=
   [[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
-  e=;if((d=BASH_REMATCH[2])) ;then
+  if((d=BASH_REMATCH[2])) ;then
    ((BASH_REMATCH[3])) && e=${BASH_REMATCH[4]:-1}
    ((l=1+HISTCMD-((D=d+U))))
    ((e>=d-1)) &&{ echo $e: invalid value, use a dash such -$d to delete line $l only;set --;continue;}
-   let s=d-e++
-   ((E=e+U))
-   be='lines were'
+   let s=d-e++ ;let E=e+U
+   be="$((D-E+1)) lines were"
   else
    ((d=${BASH_REMATCH[1]:-1}))
    ((l=1+HISTCMD-((E=D=d+U))))
@@ -81,15 +80,15 @@ for n ;{
   {
    history -d -$i 2>/dev/null
   };did=1
-  echo -e "\e[1;32mThese $be deleted\e[m"
  fi
+ echo -e "\e[1;32mThe $be deleted\e[m"
  ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
  history $LO | head -$lo
- echo -e "  \e[1;32m   Here's $be deleted by '$n' command.......\e[m"
+ echo -e "  \e[1;32m   .....Here's the $be deleted by specifying \e[41;1;37m$n\e[m"
  ((H=1+HISTCMD-l))
  history $H | head -$((H>13? 13: H))
 }
-[[ $t ]] &&{
+[[ $t ]] &&{ M=
  s=${t//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
  s=${s//\+/\\+};s=${s//\|/\\|};s=${s//\^/\\^};s=${s//\?/\\?};
  s=${s//\[/\\[};s=${s//\(/\\(};s=${s//\{/\\{}
@@ -114,14 +113,18 @@ for n ;{
  echo -en '\e[40;1;32m'
  read -N1 -p "Delete $Z line(s) above from command history? (Enter: yes Else: no) " h
  [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
- let u=-Z+ln[--Z]
- unset IFS
+ ((u=-Z+((H=ln[--Z]))))
  for ((i=Z; i>=0; i--)){
-  history -d ${ln[i]} 2>/dev/null ;}
- echo -e "Finished deleting all $((Z+1)) lines above \e[m";did=1
+  history -d ${ln[i]} 2>/dev/null ;};did=1
+ if ((Z)) ;then
+  be='lines were'
+  ((H-l>Z)) && M=' being not consecutive as there is unmatched line among them'
+ else be='line was'
+ fi
+ echo -e "Finished, the $((Z+1)) $be deleted\e[m"
  ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
  history $LO | head -$lo
- echo -e "\e[40;1;32m     .......Here's the deleted lines having string \e[41;1;37m$t\e[m"
+ echo -e "\e[40;1;32m     ...Here's the found, deleted $be before$M, by search string \e[41;1;37m$t\e[m"
  ((H=HISTCMD-u))
  history $H | head -$((H>13? 13: H))
 }
