@@ -22,16 +22,17 @@ Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else:
 - Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
 - Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
 - Enter key will go out back to shell prompt   
-- put number(s) such as 367, it will remove line 367 or such then followed by number range such as 367 371-373, it will remove lines 367, 371, 372, 373, reverse range boundary such as 375-371 doesn't matter, but note the requirement: the **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously. If the number(s) range's high limit is the latest one, a dash (-) can be put instead. **371-** it will remove lines 371, 372 ... up to 379   
+- put number(s) such as 367, it will remove line 367 or 371-373, it will remove lines 367, 371, 372, 373, reverse range boundary such as 375-371 doesn't matter, or 367 then followed by 375-371 or any number/range else, but note the requirement: one line **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously, but then output will be in reverse i.e. descending order. If the number(s) range's high limit is the latest one, a dash (-) can be put instead. **371-** it will remove lines 371, 372 ... up to 379   
 - put in such --number or --number-number, it will delete the last line(s) relative to the lines currently being shown, for example:   
 - put a dash then a number: -5, will remove the 5th line ordered from the latest lines being shown now. single dash means -1 which will remove the last line    
 - put two dash in a row then number: --5, will remove the last 5 lines relative to lines being shown now   
 - likewise above with addition -number to except the last that number lines, e.g. --5-2 remove the last 5 lines but the latest 2 lines, --5- will remove the last 5 lines but the last line   
 - or put anything else, it'll be treated as the characters of substring of a command line string as long as it has at least 3 characters. Any history line having that string will be removed, but if the left/right end is made adjacent with space, that end will be anchored as the first/last string to search, so surrounding it with spaces will turn it to be exact string to match instead of substring   
-- likewise above but it has only 1 or 2 printable characters, it will be assumed to find the string as exact i.e. whole word of line. Alternatively it can be made as a substring search if it's surrounded by space so the opposite of above   
+- likewise above but it has only 1 or 2 printable characters, it will be assumed to find the string as exact i.e. whole of the line. Alternatively it can be made as a substring search if it's surrounded by space so the exact opposite of above   
+- on character: | & && ; it needs an escape by preceding it with \\ character    
 - if input character with `...` (three period in a row) it becomes just OS shell `\*` wildcard character    
-- if input character with `.` (single period) it becomes just OS shell `\?` wildcard character    
-- It can be as the shell prompt (termed as readline) by putting a space first
+- if input character with `.` (single period) it becomes just OS shell `\?` wildcard character while literal periode is input with \\.     
+- Its prompt function like the shell prompt behavior (well termed as readline) by preceding it with space first
 
 If one already knew the number or the string, then he can put it directly in shell/terminal prompt such as:   
 `$ h 371-375 367`   

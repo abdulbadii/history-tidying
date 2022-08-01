@@ -11,7 +11,7 @@ if [ -z "$1" ] ;then
 		case $m in
 		$'\x1b') # \e ESC
 			read -N 1 m
-			if [[ $m != [ ]] ;then history -c;history -r;return
+			if [[ $m != [ ]] ;then return
 			else
 				read -N 1 m; echo
 				case $m in
@@ -36,14 +36,11 @@ if [ -z "$1" ] ;then
 		*)   			read -rei "$m" m; break
 		esac
 	done
- m=${m//\\/\\\\}
- eval set -- "${m//\"/\\\"}"
+ unset IFS b i j k l u Z D E n s t ln
+ m=${m//\\/\\\\};set -- ${m//\"/\\\"}
 fi
-unset IFS b i j k l u Z D E n s t ln
 for m ;{
- let ++i
- if [[ $m =~ ^-?-?[0-9]+-?[0-9]*$ ]];then n=$m\ $n ;else t=${*:i} ;break;fi
-}
+ if [[ $m =~ ^-?-?[0-9]+-?[0-9]*$ ]];then n=$m\ $n ;else t=${*: ++i} ;break;fi;}
 set -- $n
 for n ;{
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen:\e[m'
@@ -82,11 +79,11 @@ for n ;{
   };did=1
  fi
  echo -e "\e[1;32mThe $be deleted\e[m"
- ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
+ ((LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
  echo -e "  \e[1;32m   .....Here's the $be deleted by specifying \e[41;1;37m$n\e[m"
  ((H=1+HISTCMD-l))
- history $H | head -$((H>13? 13: H))
+ history $H | head -$((H>11? 11: H))
 }
 [[ $t ]] &&{ M=
  s=${t//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
@@ -118,15 +115,15 @@ for n ;{
   history -d ${ln[i]} 2>/dev/null ;};did=1
  if ((Z)) ;then
   be='lines were'
-  ((H-l>Z)) && M=' being not consecutive as there is unmatched line among them'
+  ((H-l>Z)) && M=", not consecutively as there'd be undeleted line(s) between them"
  else be='line was'
  fi
  echo -e "Finished, the $((Z+1)) $be deleted\e[m"
- ((LO=1+HISTCMD-l+((lo=l>13? 13: l))))
+ ((LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
  echo -e "\e[40;1;32m     ...Here's the found, deleted $be before$M, by search string \e[41;1;37m$t\e[m"
  ((H=HISTCMD-u))
- history $H | head -$((H>13? 13: H))
+ history $H | head -$((H>11? 11: H))
 }
 ((F))&&break
 set --
