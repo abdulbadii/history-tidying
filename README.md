@@ -28,16 +28,14 @@ Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else:
 - put two dash in a row then number: --5, will remove the last 5 lines relative to lines being shown now   
 - likewise above with addition -number to except the last that number lines, e.g. --5-2 remove the last 5 lines but the latest 2 lines, --5- will remove the last 5 lines but the last line   
 - or put anything else, it'll be treated as the characters of substring of a command line string as long as it has at least 3 characters. Any history line having that string will be removed, but if the left/right end is made adjacent with space, that end will be anchored as the first/last string to search, so surrounding it with spaces will turn it to be exact string to match instead of substring   
-- likewise above but it has only 1 or 2 printable characters, it will be assumed to find the string as exact i.e. whole of the line. Alternatively it can be made as a substring search if it's surrounded by space so the exact opposite of above   
-- on character: | & && ; it needs an escape by preceding it with \\ character    
+- likewise above but it has only 1 or 2 printable characters, it will be assumed to find the string as exact i.e. whole of the line. Alternatively it can be made as a substring search if it's surrounded by space so the exact opposite of above     
 - if input character with `...` (three period in a row) it becomes just OS shell `\*` wildcard character    
 - if input character with `.` (single period) it becomes just OS shell `\?` wildcard character while literal periode is input with \\.     
-- Its prompt function like the shell prompt behavior (well termed as readline) by preceding it with space first
+- Do all these finely as it functions as the shell prompt behavior (well termed as readline) by preceding it with space first
 
-If one already knew the number or the string, then he can put it directly in shell/terminal prompt such as:   
+If one already knew the number or the searched string, then just put it directly in shell/terminal prompt such as:   
 `$ h 371-375 367`   
 `$ cd /home`
-Upon exit it will automatically clean up all empty or space only lines   
 
 It'b be also as history alias i.e.
 
@@ -53,10 +51,11 @@ An addition to history options, there is:
 reload history from file `~/.bash_history`
 (clean the current history up and then do as previous above)   
 
-Except the mere `history` command itself as typing h <enter> will get into this interactive history tidying   
+Except the mere `history` command itself to simply list entire numbered command history, as typing h <enter> will get into this interactive history tidying   
 
 So it needs a period such as 
 `$ h .`   
-to simply list numbered command history entirely
+
+Upon exit it will automatically clean up every empty/space content line   
 
 Do **h -w** to ensure save in ~/.bash_history after tidying up before exit
