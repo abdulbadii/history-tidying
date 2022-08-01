@@ -108,20 +108,19 @@ for n ;{
  }
  ! ((Z)) &&{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
  echo -en '\e[40;1;32m'
- read -N1 -p "Delete $Z line(s) above from command history? (Enter: yes Else: no) " h
- [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
  ((u=-Z+((H=ln[--Z]))))
+ if ((Z)) ;then
+  be='lines were';s=s
+  ((H-l>Z)) && M=", they're not consecutive between which undeleted line(s) lies"
+ else be='line was';s=;fi
+ read -N1 -p "Delete $((Z+1)) line$s above from command history? (Enter: yes Else: no) " h
+ [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
  for ((i=Z; i>=0; i--)){
   history -d ${ln[i]} 2>/dev/null ;};did=1
- if ((Z)) ;then
-  be='lines were'
-  ((H-l>Z)) && M=", not consecutively as there'd be undeleted line(s) between them"
- else be='line was'
- fi
  echo -e "Finished, the $((Z+1)) $be deleted\e[m"
  ((LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
- echo -e "\e[40;1;32m     ...Here's the found, deleted $be before$M, by search string \e[41;1;37m$t\e[m"
+ echo -e "\e[40;1;32m   ...Here's the found, deleted $be$M, as searched by string \e[41;1;37m$t\e[m"
  ((H=HISTCMD-u))
  history $H | head -$((H>11? 11: H))
 }
@@ -129,14 +128,12 @@ for n ;{
 set --
 done
 ((did)) &&{
- read -sN1 -p 'Save the modified history (Enter: yes)? ' o
+ read -sN1 -p 'Save the modified history (Enter: Yes. r: No, revert back the deletion. Else: No)? ' o
 	if [[ $o = $'\xa' ]];then
   history -w&&echo ..saved
   IFS=$'\n';i=;for l in `history`
   {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&	history -d $((BASH_REMATCH[1]-i++)); }
-	else
-		read -N1 -p ' Revert back the modified history (Enter: yes)? ' o
-		[ "$o" = $'\xa' ]&&{ history -c;history -r;}
+	elif	[[ $o =~ ^[rR]$ ]] ;then history -c;history -r
  fi
 }
 unset IFS
