@@ -39,15 +39,19 @@ if [ -z "$1" ] ;then
  unset IFS b i j k l u Z D E n s t ln
  m=${m//\\/\\\\};set -- "${m//\"/\\\"}"
 fi
-for m ;{
- if [[ $m =~ ^-?-?[0-9]+-?[0-9]*$ ]];then n=$m\ $n ;else t=${*: ++i} ;break;fi;}
+if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*)(.*) ]];then
+ for m in ${BASH_REMATCH[1]}
+  { n=$m\ $n ;}
+ t=${BASH_REMATCH[3]}
+else t=$m
+fi
 set -- $n
 for n ;{
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen:\e[m'
  if [[ $n =~ ^([0-9]+)(-([1-9][0-9]*)?)?$ ]];then
   let l=u=BASH_REMATCH[1]
   ((l<OF)) &&{ echo $l is less than history start $OF, give it as $OF;l=$OF;}
-  ((l=u=l?l:1));be='one line was'
+  ((l=u=l?l:1));be='line was'
   [[ ${BASH_REMATCH[2]} ]] &&{
    u=${BASH_REMATCH[3]:-$HISTCMD}
    be="$((u-l+1)) lines were"
@@ -81,7 +85,7 @@ for n ;{
  echo -e "\e[1;32mThe $be deleted\e[m"
  ((LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
- echo -e "  \e[1;32m   ...Here's the found, deleted $be, by finding \e[41;1;37m$n\e[m"
+ echo -e "  \e[1;32m   ...Here's where the found, deleted $be, by finding \e[41;1;37m$n\e[m"
  ((H=1+HISTCMD-l))
  history $H | head -$((H>11? 11: H))
 }
@@ -118,7 +122,7 @@ for n ;{
  echo -e "Finished, the $((Z+1)) $be deleted\e[m"
  ((LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
- echo -e "\e[40;1;32m   ...Here's the found, deleted $be$M, as searched by string \e[41;1;37m$t\e[m"
+ echo -e "\e[40;1;32m   ...Here's where the found, deleted $be$M, as searched by string \e[41;1;37m$t\e[m"
  ((H=HISTCMD-u))
  history $H | head -$((H>11? 11: H))
 }
