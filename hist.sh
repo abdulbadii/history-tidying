@@ -37,14 +37,14 @@ if [ -z "$1" ] ;then
 		esac
 	done
  unset IFS b i j k l u Z D E n s t ln
- m=${m//\\/\\\\};set -- "${m//\"/\\\"}"
 fi
 if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*)(.*) ]];then
- for m in ${BASH_REMATCH[1]}
-  { n=$m\ $n ;}
+ for m in ${BASH_REMATCH[1]} ;{ n=$m\ $n ;}
  t=${BASH_REMATCH[3]}
-else t=$m
+else
+ t=$m
 fi
+t="${t//\\/\\\\}";t=${t//\\\\./\\.};t=${m//\"/\\\"}
 set -- $n
 for n ;{
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen:\e[m'
@@ -105,7 +105,7 @@ for n ;{
  for h in `history |sed -nE "/^\s+[0-9]+\*?\s+$s$/p"`
  {
   [[ $h =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]+$s ]]
-  printf "\e[1;36m% 5d \e[m%s\e[41;1;37m%s\e[m%s\n" $((ln[Z]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
+  printf "\e[1;36m% 4d \e[m%s\e[41;1;37m%s\e[m%s\n" $((ln[Z]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
   ((Z++)) || l=$ln
  }
  ! ((Z)) &&{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
