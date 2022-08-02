@@ -37,7 +37,7 @@ if [ -z "$1" ] ;then
 		esac
 	done
  unset IFS b i j k l u Z D E n s t ln
- m=${m//\\/\\\\};set -- ${m//\"/\\\"}
+ m=${m//\\/\\\\};set -- "${m//\"/\\\"}"
 fi
 for m ;{
  if [[ $m =~ ^-?-?[0-9]+-?[0-9]*$ ]];then n=$m\ $n ;else t=${*: ++i} ;break;fi;}
@@ -69,7 +69,7 @@ for n ;{
   else
    ((d=${BASH_REMATCH[1]:-1}))
    ((l=1+HISTCMD-((E=D=d+U))))
-   s=1;be='one line was'
+   s=1;be='line was'
   fi
   ((d>25)) || ((D>B)) &&{ echo $d: out of list range;set --;continue;}
   echo -en '\e[41;1;37m'; history $d | head -$s ;echo -en '\e[m'
@@ -81,7 +81,7 @@ for n ;{
  echo -e "\e[1;32mThe $be deleted\e[m"
  ((LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
- echo -e "  \e[1;32m   .....Here's the $be deleted by specifying \e[41;1;37m$n\e[m"
+ echo -e "  \e[1;32m   ...Here's the found, deleted $be, by finding \e[41;1;37m$n\e[m"
  ((H=1+HISTCMD-l))
  history $H | head -$((H>11? 11: H))
 }
@@ -92,18 +92,16 @@ for n ;{
  s=${s//\]/\\]};s=${s//\)/\\)};s=${s//\}/\\'}'}
  s=${s//\$/\\\$}
  if((${#t}>2)) ;then
-  if [[ $s =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then s=.*$s.*
-  elif [[ $s =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then s=${BASH_REMATCH[1]}.*
-  elif [[ $s =~ ^([[:graph:]].*)[[:space:]]+$ ]] ;then	s=.*${BASH_REMATCH[1]}
-  elif [[ $s =~ ^[[:space:]](.*)[[:space:]]+$ ]] ;then	s=${BASH_REMATCH[1]};fi
- elif [[ $s =~ ^[[:space:]](.*)[[:space:]]+$ ]] ;then	s=.*${BASH_REMATCH[1]}.*
- fi
+  if [[ $s =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then s="()(${BASH_REMATCH[1]})(.*)"
+  elif [[ $s =~ ^([[:graph:]].*)[[:space:]]$ ]] ;then	s="(.*)(${BASH_REMATCH[1]})()"
+  elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="()(${BASH_REMATCH[1]})()"
+  elif [[ $s =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then s="(.*)($s)(.*)";fi
+ elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="(.*)(${BASH_REMATCH[1]})(.*)";fi
  IFS=$'\n'
- for h in `history|sed -nE "s/^\s+([0-9]+)\*?\s+($s)$/\1-\2/p"`
+ for h in `history |sed -nE "/^\s+[0-9]+\*?\s+$s$/p"`
  {
-  [[ $h =~ ^([0-9]+)-(.+) ]]
-  let ln[Z]=BASH_REMATCH[1]
-  printf "% 5d" ${ln[Z]};echo -en ' \e[41;1;37m';echo -n ${BASH_REMATCH[2]};echo -e '\e[m'
+  [[ $h =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]+$s ]]
+  printf "\e[1;36m% 5d \e[m%s\e[41;1;37m%s\e[m%s\n" $((ln[Z]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
   ((Z++)) || l=$ln
  }
  ! ((Z)) &&{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
@@ -111,7 +109,7 @@ for n ;{
  ((u=-Z+((H=ln[--Z]))))
  if ((Z)) ;then
   be='lines were';s=s
-  ((H-l>Z)) && M=", they're not consecutive between which undeleted line(s) lies"
+  ((H-l>Z)) && M=", being not consecutive between which the undeleted lines lie"
  else be='line was';s=;fi
  read -N1 -p "Delete $((Z+1)) line$s above from command history? (Enter: yes Else: no) " h
  [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
