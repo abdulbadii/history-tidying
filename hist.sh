@@ -38,7 +38,7 @@ if [ -z "$1" ] ;then
 	done
  unset IFS b i j k l u Z D E n s t ln
 fi
-if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*)(.*) ]];then
+if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*|-)(.*) ]];then
  for m in ${BASH_REMATCH[1]} ;{ n=$m\ $n ;}
  t=${BASH_REMATCH[3]}
 else t=$m
@@ -57,10 +57,10 @@ for n ;{
   }
   ((u<l)) &&{ t=$u;u=$l;l=$t; }
   ((u>HISTCMD)) &&{ echo $u is beyond range;continue;}
-  echo -en '\e[41;1;37m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
+  echo -en '\e[1;31m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
   for i in `eval echo {$u..$l}` ;{
    history -d $i 2>/dev/null
-  };did=1
+  };did=1;n=
  else  e=
   [[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
   if((d=BASH_REMATCH[2])) ;then
@@ -74,20 +74,22 @@ for n ;{
    ((l=1+HISTCMD-((E=D=d+U))))
    s=1;be='line was'
   fi
+  let u=1+HISTCMD-E
   ((d>25)) || ((D>B)) &&{ echo $d: out of list range;set --;continue;}
-  echo -en '\e[41;1;37m'; history $d | head -$s ;echo -en '\e[m'
+  echo -en '\e[1;31m'; history $d | head -$s ;echo -en '\e[m'
   for i in `eval echo {$D..$E}`
   {
    history -d -$i 2>/dev/null
-  };did=1
+  };did=1;n="specified by $n"
  fi
  echo -e "\e[1;32mThe $be deleted\e[m"
  ((L=LO=1+HISTCMD-l+((lo=l>11? 11: l))))
  history $LO | head -$lo
- echo -e "  \e[1;32m   ...Here's where the found, deleted $be, by finding \e[41;1;37m$n\e[m"
+ echo -e "  \e[1;32m   ...Here's where the found, deleted $be, line \e[41;1;37m$l-$u\e[m $n"
  ((H=1+HISTCMD-l))
- ((U=H>11? -11: -H));history $H |head $U
- let U+=H
+ ((U=H>11? 11: H));((H)) || { H=;U=5;}
+ history $H |head -$U
+ let U=H-U
 }
 [[ $t ]] &&{ M=
  s=${t//\"/\\\"};s=${s//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
@@ -113,7 +115,7 @@ for n ;{
  ((u=-Z+((H=ln[--Z]))))
  if ((Z)) ;then
   be='lines were';s=s
-  ((H-l>Z)) && M=", being not consecutive between which the undeleted lines lie"
+  ((H-l>Z)) && M=", not consecutive between which the undeleted lines lie"
  else be='line was';s=;fi
  read -N1 -p "Delete $((Z+1)) line$s above from command history? (Enter: yes Else: no) " h
  [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
@@ -124,19 +126,20 @@ for n ;{
  history $LO | head -$lo
  echo -e "\e[40;1;32m   ...Here's where the found, deleted $be$M, as searched by string \e[41;1;37m$t\e[m"
  ((H=HISTCMD-u))
- ((U=H>11? -11: -H));history $H |head $U
- let U+=H
+ ((U=H>11? 11: H));((H)) || { H=;U=5;}
+ history $H |head -$U
+ let U=H-U
 }
 ((F))&&break
 set --
 done
 ((did)) &&{
- read -N1 -p 'Save the modified history (Enter: Yes. R/r: No, revert back the deletion. Else: No)? ' o
+ read -N1 -p 'Save the modified history (Enter: Yes. N/n: No. Else: No and revert back deletion)? ' o
 	if [[ $o = $'\xa' ]];then
   history -w&&echo -n ..saved
   IFS=$'\n';i=;for l in `history`
   {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&history -d $((BASH_REMATCH[1]-i++)); }
-	elif	[[ $o =~ ^[rR]$ ]] ;then history -c;history -r;fi;echo
+	elif	[[ ! $o =~ ^[nN]$ ]] ;then history -c;history -r;fi;echo
 }
 unset IFS
 } #END h
