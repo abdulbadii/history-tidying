@@ -38,10 +38,9 @@ if [ -z "$1" ] ;then
 	done
 fi
 unset IFS b l u z D E M n s t ln
-if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*|^-)\ ?(.*) ]];then
+if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*|^-)(\ +(.+))? ]];then
  for n in ${BASH_REMATCH[1]} ;{ s=$n\ $s ;}
- t=${BASH_REMATCH[3]}
- [[ $t ]] &&echo also try search string \'$t\' 
+ t=${BASH_REMATCH[4]}
 else t=$m
 fi
 set -- $s
