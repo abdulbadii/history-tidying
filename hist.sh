@@ -7,7 +7,7 @@ if [ -z "$1" ] ;then
 	((Z))&&{	history 25;Z=;	 }
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]];((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
 	IFS='';while : ;do
-		read -sN 1 -p "`echo $'\e[44;1;37m'`Next 25? Up/Down: from last/begin, [-]n[-][n] erase by range, Enter: out, Else: a search substring `echo -e '\e[m\n\r'`" m
+		read -sN 1 -p "`echo $'\e[44;1;37m'`Next 25? Up/Down: from last/begin, [-|--]n[=|-n] erase by range, Enter: out, Else: a search string `echo -e '\e[m\n\r'`" m
 		case $m in
 		$'\x1b') # \e ESC
 			read -N 1 m
@@ -96,8 +96,10 @@ for n ;{
  ((H=1+HISTCMD-l))
  ((U=H>11? 11: H))
  ((H)) && history $H |head -$U
- ((H<12)) &&{ let U=11-H; history |head -$U ;}
- let U=HISTCMD-U;M=
+ let U=H-U
+ ((H<12)) &&{
+  let U=11-H; history |head -$U;let U=HISTCMD-U
+  };M=
 }
 [[ $t ]] &&{
  s=${t//\\/\\\\};s=${s//\\\\./\\.};s=${s//\"/\\\"}
@@ -115,12 +117,14 @@ for n ;{
  for h in `history |sed -nE "/^\s+[0-9]+\*?\s+$s$/p"`
  {
   [[ $h =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]+$s ]]
-  printf "\e[1;36m% 4d \e[m%s\e[41;1;37m%s\e[m%s\n" $((ln[Z]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
+  printf "\e[1;36m% 4d \e[m%s\e[41;1;37m%s\e[m%s\n" $((ln[z]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
   ((z++)) || l=$ln
  }
- ! ((z)) &&{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
+ ((z)) ||{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
  echo -en '\e[40;1;32m'
  ((u=-z+((H=ln[--z]))))
+ H=$H
+ z=$z
  if ((z)) ;then
   b='lines were';s=s
   ((H-l>z)) && M=", not consecutive between which the undeleted lines lie"
@@ -132,15 +136,20 @@ for n ;{
   history -d ${ln[i]} 2>/dev/null ;};did=1
  echo -e "Finished, the $((z+1)) $b deleted\e[m"
  L=;let F=l-1
+ l=$l;u=$u
  ((l>11)) &&{ let L=HISTCMD-l+12 ; F=11 ;}
  ((l<12)) && history $((11-F))
  history $L | head -$F
  echo -e "\e[40;1;32m  ...Here's where the found, deleted $b$M, as searched of string \e[41;1;37m$t\e[m"
  ((H=HISTCMD-u))
+ o=$HISTCMD
+ H=$H
  ((U=H>11? 11: H))
  ((H)) && history $H |head -$U
- ((H<12)) &&{ let U=11-H; history |head -$U ;}
- let U=HISTCMD-U
+ let U=H-U
+ ((H<12)) &&{
+  let U=11-H; history |head -$U
+  let U=HISTCMD-U;}
 }
 ((Z))&&break
 set --
