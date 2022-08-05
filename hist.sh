@@ -37,29 +37,34 @@ if [ -z "$1" ] ;then
 		esac
 	done
 fi
-unset IFS b l u z D E M n s t ln
-if [[ $m =~ ^(-?-?[0-9]+-?[0-9]*(\ +-?-?[0-9]+-?[0-9]*)*|^-)(\ +(.+))? ]];then
- for n in ${BASH_REMATCH[1]} ;{ s=$n\ $s ;}
- t=${BASH_REMATCH[4]}
+unset IFS b l u z D E M s ln
+if [[ $m =~ ^(([0-9]+=-?[0-9]*\ *|-?-?[0-9]+-?[0-9]*\ *)+|-)(.*)$ ]];then
+ for t in ${BASH_REMATCH[1]} ;{ s=$t\ $s ;}
+ t=${BASH_REMATCH[3]}
+ [[ $t ]]&&echo -e Try to find, delete line: $s\nAlso one with string $t
 else t=$m
 fi
 set -- $s
 for n ;{
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen:\e[m'
- if [[ $n =~ ^([0-9]+)(-([1-9][0-9]*)?)?$ ]];then
-  let l=u=BASH_REMATCH[1]
-  ((l<OF)) &&{ echo $l is less than $OF, history starting number;l=$OF;}
-  ((l=u=l?l:1));b='line was'
+ if [[ $n =~ ^([0-9]+)((=-?|-)([1-9][0-9]*)?)?$ ]];then
+  let l=BASH_REMATCH[1]
+  ((l=u=l? l:1))
   [[ ${BASH_REMATCH[2]} ]] &&{
-   u=${BASH_REMATCH[3]:-$HISTCMD}
-   b="$((u-l+1)) lines were"
+   u=${BASH_REMATCH[4]:-$HISTCMD}
+   [ ! ${BASH_REMATCH[3]} = - ] &&{
+    u=${BASH_REMATCH[2]#=};((${u#-})) ||u=${u}1
+    let u+=l; n=$l-$u
+   }
   }
-  ((l>HISTCMD)) || ((u>HISTCMD)) &&{ echo $u is beyond range;continue;}
-  ((u<l)) &&{ t=$u;u=$l;l=$t; }
+  ((u<l)) &&{ T=$u;u=$l;l=$T; }
+  ((l<OF)) || ((u>HISTCMD)) &&{
+   echo $l or $u is beyond range. History starting-end line number is $OF-$HISTCMD;continue;}
+  b="$((u-l+1)) lines were"
+  ((l==u)) &&b='line was'
   echo -en '\e[1;35m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
   for i in `eval echo {$u..$l}` ;{
-   history -d $i 2>/dev/null;}
-  did=1
+   history -d $i 2>/dev/null;};did=1
  else  e=
   [[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
   if((d=BASH_REMATCH[2])) ;then
@@ -143,9 +148,9 @@ done
 ((did)) &&{
  read -sN1 -p 'Save the modified history (Enter: Yes. N/n: No. Else: No and revert back deletion)? ' o
 	if [[ $o = $'\xa' ]];then
-  history -w&&echo -n ..saved
   IFS=$'\n';i=;for l in `history`
   {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&history -d $((BASH_REMATCH[1]-i++)); }
+  history -w&&echo -n ..saved
 	elif	[[ ! $o =~ ^[nN]$ ]] ;then history -c;history -r;fi;echo -n $o
 }
 unset IFS
