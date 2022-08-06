@@ -1,10 +1,10 @@
 h(){ # BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
-Z=1;L=25;U=0;did=
+G=1;L=25;U=0;did=
 while : ;do
 if [ -z "$1" ] ;then
-	((Z))&&{	history 25;Z=;	 }
+	((G))&&{	history 25;G=;	 }
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]];((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
 	IFS='';while : ;do
 		read -sN 1 -p "`echo $'\e[44;1;37m'`Next 25? Up/Down: from last/begin, [-|--]n[=|-n] erase by range, Enter: out, Else: a search string `echo -e '\e[m\n\r'`" m
@@ -37,50 +37,59 @@ if [ -z "$1" ] ;then
 		esac
 	done
 fi
-unset IFS b l u z D E M s ln
-if [[ $m =~ ^(([0-9]+=-?[0-9]*\ *|-?-?[0-9]+-?[0-9]*\ *)+|-)(.*)$ ]];then
- for t in ${BASH_REMATCH[1]} ;{ s=$t\ $s ;}
- t=${BASH_REMATCH[3]}
- [[ $t ]]&&echo -e Try to find, delete line: $s\nAlso one with string $t
-else t=$m
+unset IFS l u z s
+if [[ $m =~ ^(([0-9]+(-[0-9]|=-?[0-9]*)?|-([1-9][0-9]*(=-?[0-9]*)?)?|--[1-9][0-9]*-?[0-9]*)+)(\ +(.*))?$ ]];then
+ for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
+ Z=${BASH_REMATCH[7]}
+ [[ $Z ]]&&echo -e Try to find, delete line: $s\nAlso one with string $Z
+else Z=$m
 fi
 set -- $s
-for n ;{
+for n ;{ unset ln e
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen:\e[m'
- if [[ $n =~ ^([0-9]+)((=-?|-)([1-9][0-9]*)?)?$ ]];then
+ if [[ $n =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   let l=BASH_REMATCH[1]
-  ((l=u=l? l:1))
+  ((l=l?l:1))
   [[ ${BASH_REMATCH[2]} ]] &&{
-   u=${BASH_REMATCH[4]:-$HISTCMD}
+   u=${BASH_REMATCH[4]:-$HISTCMD};((u=u?u:1))
    [ ! ${BASH_REMATCH[3]} = - ] &&{
     u=${BASH_REMATCH[2]#=};((${u#-})) ||u=${u}1
-    let u+=l; n=$l-$u
-   }
+    let u+=l;}
   }
   ((u<l)) &&{ T=$u;u=$l;l=$T; }
   ((l<OF)) || ((u>HISTCMD)) &&{
-   echo $l or $u is beyond range. History starting-end line number is $OF-$HISTCMD;continue;}
+   echo $n is beyond range, the history starting-end line number is $OF-$HISTCMD;continue;}
+  n=$l-$u
   b="$((u-l+1)) lines were"
-  ((l==u)) &&b='line was'
+  ((l==u)) &&{
+   n=$l ; b='line was';}
   echo -en '\e[1;35m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
   for i in `eval echo {$u..$l}` ;{
    history -d $i 2>/dev/null;};did=1
- else  e=
-  [[ $n =~ ^-([1-9][0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
-  if((d=BASH_REMATCH[2])) ;then
-   [[ ${BASH_REMATCH[3]} ]] && e=${BASH_REMATCH[4]:-1}
-   ((l=1+HISTCMD-((D=d+U))))
+ else
+  [[ $n =~ ^-([1-9][0-9]*)?(=-?[0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
+  if((d=BASH_REMATCH[3])) ;then
+   [[ ${BASH_REMATCH[4]} ]] && e=${BASH_REMATCH[5]:-1}
    ((e>=d-1)) &&{ echo $e: invalid value, use a dash such -$d to delete line $l only;set --;continue;}
-   b="$((s=d-e)) lines were"
-   let E=++e+U
+   let ++e
   else
-   ((d=${BASH_REMATCH[1]:-1}))
-   ((l=1+HISTCMD-((E=D=d+U))))
-   s=1;b='line was'
-  fi
+   d=${BASH_REMATCH[1]}
+   ((d=d?d:1))
+   t=${BASH_REMATCH[2]}
+   e=$d
+   [[ $t ]] &&{ t=${t#=}
+    ((${t#-})) ||t=${t}1
+    e=$d
+    let d-=t
+    ((d<e)) &&{ T=$d;d=$e;e=$T; }
+   }
+  fi  
+  ((l=1+HISTCMD-((D=d+U))));let E=e+U
+  ((((u=-l-d+e))==-l)) &&u=
+  if ((s=d-e)) ;then b="$((++s)) lines were"
+  else b='line was';s=1 ;fi
   ((d>25)) || ((D>B)) &&{ echo $d: out of list range;set --;continue;}
   echo -en '\e[1;35m'; history $d | head -$s ;echo -en '\e[m'
-  ((((u=-1-HISTCMD+E))==-l)) &&u=
   for i in `eval echo {$D..$E}` ;{
    history -d -$i 2>/dev/null
   };did=1
@@ -92,22 +101,23 @@ for n ;{
  ((l>11)) &&{ let L=HISTCMD-l+12 ; F=11 ;}
  ((l<12)) && history $((11-F))
  history $L | head -$F
- echo -e "  \e[1;32m  ...Here's where the found, deleted $b, previously: \e[41;1;37m$n$M\e[m"
- ((H=1+HISTCMD-l))
+ echo -e "  \e[1;32m  ...Here's where the found, deleted $b, previously line \e[41;1;37m$n$M\e[m"
+ let H=1+HISTCMD-l
  ((U=H>11? 11: H))
  ((H)) && history $H |head -$U
  let U=H-U
  ((H<12)) &&{
   let U=11-H; history |head -$U;let U=HISTCMD-U
-  };M=
+  }
+ M=
 }
-[[ $t ]] &&{
- s=${t//\\/\\\\};s=${s//\\\\./\\.};s=${s//\"/\\\"}
+[[ $Z ]] &&{
+ s=${Z//\\/\\\\};s=${s//\\\\./\\.};s=${s//\"/\\\"}
  s=${s//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
  s=${s//\+/\\+};s=${s//\|/\\|};s=${s//\^/\\^};s=${s//\?/\\?};
  s=${s//\[/\\[};s=${s//\(/\\(};s=${s//\{/\\{}
  s=${s//\]/\\]};s=${s//\)/\\)};s=${s//\}/\\'}'};s=${s//\$/\\\$}
- if((${#t}>2)) ;then
+ if((${#Z}>2)) ;then
   if [[ $s =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then s="()(${BASH_REMATCH[1]})(.*)"
   elif [[ $s =~ ^([[:graph:]].*)[[:space:]]$ ]] ;then	s="(.*)(${BASH_REMATCH[1]})()"
   elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="()(${BASH_REMATCH[1]})()"
@@ -120,7 +130,7 @@ for n ;{
   printf "\e[1;36m% 4d \e[m%s\e[41;1;37m%s\e[m%s\n" $((ln[z]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
   ((z++)) || l=$ln
  }
- ((z)) ||{ echo -e "\e[41;1;37m$t\e[m wasn't found, did nothing";set --;continue;}
+ ((z)) ||{ echo -e "\e[41;1;37m$Z\e[m wasn't found, did nothing";set --;continue;}
  echo -en '\e[40;1;32m'
  ((u=-z+((H=ln[--z]))))
  H=$H
@@ -140,10 +150,8 @@ for n ;{
  ((l>11)) &&{ let L=HISTCMD-l+12 ; F=11 ;}
  ((l<12)) && history $((11-F))
  history $L | head -$F
- echo -e "\e[40;1;32m  ...Here's where the found, deleted $b$M, as searched of string \e[41;1;37m$t\e[m"
- ((H=HISTCMD-u))
- o=$HISTCMD
- H=$H
+ echo -e "\e[40;1;32m  ...Here's where the found, deleted $b$M, as of searched string \e[41;1;37m$Z\e[m"
+ let H=HISTCMD-u
  ((U=H>11? 11: H))
  ((H)) && history $H |head -$U
  let U=H-U
@@ -151,7 +159,7 @@ for n ;{
   let U=11-H; history |head -$U
   let U=HISTCMD-U;}
 }
-((Z))&&break
+((G))&&break
 set --
 done
 ((did)) &&{

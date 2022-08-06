@@ -22,19 +22,19 @@ Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else:
 - Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
 - Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
 - Enter key will go out back to shell prompt   
-- put number(s) such as 367, it will remove line 367 or 371-373, it will remove lines 367, 371, 372, 373, reverse range boundary such as 375-371 doesn't matter, or 367 then followed by 375-371 or any number/range else, but note the requirement: one line **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously, although the output is always in reverse i.e. descending order. If the range upper end is the last history one, a dash (-) alone will suffice e.g. **371-** it will remove lines 371, 372 ...to 379
-- for the same purpose above can be in form 371=2 which means 371 and 2 lines succeding it i.e. 371-373 while 371=-3 means 371 and the 3 lines preceding it i.e. 368-371    
-- put in such --number or --number-number, it will delete the last line(s) relative to the lines currently being shown, for example:   
-- put a dash then a number: -5, will remove the 5th line ordered from the latest lines being shown now. single dash means -1 which will remove the last line    
-- put two dash in a row then number: --5, will remove the last 5 lines relative to lines being shown now   
-- likewise above with addition -number to except the last that number lines, e.g. --5-2 remove the last 5 lines but the latest 2 lines, --5- will remove the last 5 lines but the last line   
+- put a number such as 367, it will remove line 367, or `367 371-373` or `367 373-371` to remove lines 367, 371, 372, 373 (reverse range boundary numbers doesn't matter). Note the requirement: A one line **multiple numbers/ranges values must be in ascending order** otherwise it'd delete erronously, however the output is always in its reverse i.e. descending order. If the range upper number is the last history one it can be omitted e.g. `371-`it will remove lines 371, 372, ...379   
+- for the same purpose above can be put as `371=2`. It means 371 and 2 lines succeding it i.e. 371-373 while `371=-3` means 371 and the 3 lines preceding it i.e. 368-371    
+- put in such `[-]-number[-number]`, it will delete the number ordered from the end (reverse order line number), or if the dash is two, the last number lines, all are relative to lines list being shown then. For example:   
+- put a dash then a number: `-5`, will remove the 5th line ordered from the last of lines being shown. A single dash alone `-` is short for -1 which will remove the last line    
+- put two dash in a row then number: `--5`, will remove the last 5 lines relative to lines being shown now   
+- likewise above with addition -number to except the last that number lines, e.g. `--5-2` remove the last 5 lines but the latest 2 lines, `--5-` will remove the last 5 lines but the last line   
 - or put anything else, it'll be treated as the characters of substring of a command line string as long as it has at least 3 characters. Any history line having that string will be removed, but if the left/right end is made adjacent with space, that end will be anchored as the first/last string to search, so surrounding it with spaces will turn it to be exact string to match instead of substring   
-- likewise above but it has only 1 or 2 printable characters, it will be assumed to find the string as exact i.e. whole of the line. Alternatively it can be made as a substring search if it's surrounded by space so the exact opposite of above     
+- likewise above but it has only 1 or 2 printable characters, it will be assumed to find this string as exact i.e. whole of the line. Alternatively it can be made as a substring search if it's surrounded by space so the exact opposite of above     
 - if input character with `...` (three period in a row) it becomes just OS shell `\*` wildcard character    
 - if input character with `.` (single period) it becomes just OS shell `\?` wildcard character while literal periode is input with \\.     
-- Do all these finely as it functions as the shell prompt behavior (well termed as readline) by preceding it with space first
+- Do all these finely as it can behave as the shell prompt function (it's well termed as `readline`) by preceding it with space first
 
-If one already knew the number or the searched string, then just put it directly in shell/terminal prompt such as:   
+If one already knew the number or the searched string, then just put directly in shell/terminal prompt to delete it such as:   
 `$ h 371-375 367`   
 `$ cd /home`
 
@@ -46,17 +46,15 @@ shows history command's helpful reference
 `$ h -r`   
 append to current history from file ~/.bash_history   
 
-An addition to history options, there is:   
+Addition to history options, there is:   
 
 `$ h -cr`   
-reload history from file `~/.bash_history`
-(clean the current history up and then do as previous above)   
+reload the history from file `~/.bash_history`
+(clean up the current history then do the append previous above)   
 
-Except the mere `history` command itself to simply list entire numbered command history, as typing h <enter> will get into this interactive history tidying   
-
-So it needs a period such as 
+Except a mere `h` cannot be as mere `history` command itself to list entire numbered commands, as typing `h` will get into this interactive history tidying so it needs a period following it:    
 `$ h .`   
 
-Upon exit it will automatically clean up every empty/space content line   
+If quit by saving a modified history, it automatically cleans up every empty or space only content line   
 
-Do **h -w** to ensure save in ~/.bash_history after tidying up before exit
+Or do **h -w** to ensure save in ~/.bash_history after tidying up before exit the terminal
