@@ -169,7 +169,7 @@ done
   IFS=$'\n';i=;for l in `history`
   {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&history -d $((BASH_REMATCH[1]-i++)); }
   history -w&&echo ..saved
-	elif [[ ! $o =~ ^[nN]$ ]]
+	elif [[ ! $o =~ ^[nN]$ ]];then
   history -c;history -r /tmp/.bash_history0
  fi;echo $o
 };unset IFS
