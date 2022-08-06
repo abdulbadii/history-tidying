@@ -164,14 +164,13 @@ for n ;{ unset ln e R
 set --
 done
 ((did)) &&{
- read -sN1 -p 'Save the modified history (Enter: Yes. N/n: No. Else: No and revert back deletion)? ' o
+ read -sN1 -p 'Save the modified history (Enter: Yes. N/n: No. Else: No and revert it back)? ' o
 	if [[ $o = $'\xa' ]];then
   IFS=$'\n';i=;for l in `history`
   {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&history -d $((BASH_REMATCH[1]-i++)); }
-  history -w&&echo -n ..saved
-	elif	[[ ! $o =~ ^[nN]$ ]] ;then
-  history -c;history -r /tmp/.bash_history0
- fi;echo $o
+  history -w&&echo ..saved
+	else
+  [[ ! $o =~ ^[nN]$ ]] &&history -c;history -r /tmp/.bash_history0
+  echo $o
+ fi;};unset IFS
 }
-unset IFS
-} #END h
