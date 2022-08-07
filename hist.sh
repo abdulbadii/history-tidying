@@ -38,7 +38,7 @@ if [ -z "$1" ] ;then
 	done
 else m=$*
 fi
-unset IFS l u z s
+unset IFS l u z s S
 if [[ $m =~ ^(([0-9]+(-[0-9]|=-?[0-9]*)?|-([1-9][0-9]*(=-?[0-9]*)?)?|--[1-9][0-9]*-?[0-9]*)+)(\ +(.*))?$ ]];then
  for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
  Z=${BASH_REMATCH[7]}
@@ -46,35 +46,33 @@ if [[ $m =~ ^(([0-9]+(-[0-9]|=-?[0-9]*)?|-([1-9][0-9]*(=-?[0-9]*)?)?|--[1-9][0-9
 else Z=$m
 fi
 set -- $s
-for n ;{ unset ln e M R
+for n ;{ unset ln M R
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen...\e[m'
  if [[ $n =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   let l=BASH_REMATCH[1]
-  ((l=l?l:1))
-  [[ ${BASH_REMATCH[2]} ]] &&{
-   u=${BASH_REMATCH[4]}
+  ((u=l=l?l:1))
+  [[ ${BASH_REMATCH[2]} ]] &&{ u=${BASH_REMATCH[4]}
    if [ ${BASH_REMATCH[3]} = - ] ;then
-    : ${u:=$HISTCMD};((u=u?u:1))
-   else
-    ((u=${BASH_REMATCH[3]#=}(u=u?u:1)+l)) ;fi
+    : ${u:=$HISTCMD}; ((u=u?u:1))
+   else ((u=${BASH_REMATCH[3]#=}(u=u?u:1)+l)) ;fi
   }
   ((u<l)) &&{ T=$u;u=$l;l=$T; }
-  ((l<OF)) || ((u>HISTCMD)) &&{
-   echo $n is beyond range, the history starting-end line numbers are $OF-$HISTCMD;continue;}
+  ((u>HISTCMD)) || ((l<OF)) &&{ echo the history starting-end line numbers are $OF-$HISTCMD;continue;}
+  ((l<(d=1+HISTCMD-L)-17)) &&{ echo $l is 17 less than the min line $d shown;continue;}
+  ((u>(e=+HISTCMD-U)+17)) &&{ echo $u is 17 more than the max line $e shown;continue;}
   n=$l-$u
   b="$((u-l+1)) lines were"
   ((l==u)) &&{ n=$l ; b='line was' ;}
   echo -en '\e[1;35m';history $((1+HISTCMD-l)) | head -$((u-l+1));echo -en '\e[m'
   history -w /tmp/.bash_history0 ||{
-   echo cannot make backup for reverting later
-   R=1;}
+   echo cannot make backup for reverting later;R=1;}
   for i in `eval echo {$u..$l}` ;{
    history -d $i 2>/dev/null;};did=1
  else
   [[ $n =~ ^-([1-9][0-9]*)?(=-?[0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
   if((d=BASH_REMATCH[3])) ;then
    [[ ${BASH_REMATCH[4]} ]] && e=${BASH_REMATCH[5]:-1}
-   ((e>=d-1)) &&{ echo $e: invalid use, do such -$d to delete only line $l;set --;continue;}
+   ((e>=d-1)) &&{ echo $e: invalid use, do -$d to delete only line $l;set --;continue;}
    let ++e
   else
    ((e=d=(d=BASH_REMATCH[1])?d:1))
@@ -91,8 +89,7 @@ for n ;{ unset ln e M R
   fi
   echo -en '\e[1;35m'; history $D | head -$s ;echo -en '\e[m'
   history -w /tmp/.bash_history0||{
-   echo cannot make backup for reverting later
-   R=1;}
+   echo cannot make backup for reverting later;R=1;}
   for i in `eval echo {$D..$E}` ;{
    history -d -$i 2>/dev/null
   };did=1
@@ -143,8 +140,7 @@ for n ;{ unset ln e M R
  read -N1 -p "Delete $((z+1)) line$s above from command history? (Enter: yes Else: no) " h
  [[ $h = $'\xa' ]] ||{ echo;set --;continue;}
  history -w /tmp/.bash_history0||{
-   echo cannot make backup for reverting later
-   R=1;}
+   echo cannot make backup for reverting later;R=1;}
  for ((i=z; i>=0; i--)){
   history -d ${ln[i]} 2>/dev/null ;};did=1
  echo -e "Finished, the $((z+1)) $b deleted\e[m"
