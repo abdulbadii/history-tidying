@@ -55,7 +55,7 @@ if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\+ -|
 else Z=$m
 fi
 eval set -- $s
-for n ;{ unset e i j k l u s z M R F
+for n ;{ unset e i j k l u s tt z M R F
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen...\e[m'
  if [[ $n =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   ((u=l=(l=BASH_REMATCH[1])? l:1))
@@ -79,31 +79,29 @@ for n ;{ unset e i j k l u s z M R F
   }
   echo -en '\e[1;32m';read -N1 -p "Delete $t line$s above from command history? (Enter: yes Else: no) " o
   [[ $o = $'\xa' ]] ||{ continue;}
-  history -w /tmp/.bash_history0 ||{
-   echo cannot backup current history for reverting later;R=1;}
-  unset IFS;for i in `eval echo {$u..$l}` ;{
-   history -d $i 2>/dev/null;};did=1
+  history -w /tmp/.bash_history0 ||{ echo cannot backup current history for reverting later;R=1;}
+  unset IFS;for i in `eval echo {$u..$l}`;{ history -d $i 2>/dev/null;};did=1
   n=$l; b='line was'
-  ((l!=u)) &&{
-   n=$l-$u; b="$((t=u-l+1)) lines were";s=s ;}
+  ((l!=u)) &&{ n=$l-$u; b="$((t=u-l+1)) lines were";s=s ;}
  else
   [[ $n =~ ^-([1-9][0-9]*)?(=-?[0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
   if((d=BASH_REMATCH[3])) ;then
    [[ ${BASH_REMATCH[4]} ]] && e=${BASH_REMATCH[5]:-1}
-   ((e++>d)) || ((d>25)) &&{ echo $n: invalid range;continue;}
+   ((e>=d)) || ((d>25)) &&{ echo $n: invalid range;continue;}
+   let tt=t=d-++e;let tt++
   else
    ((e=d=(d=BASH_REMATCH[1])?d:1))
    t=${BASH_REMATCH[2]}
    [[ $t ]] &&{
-    t=${t#=};tt=${t#-}; ((tt)) ||{ tt=1;t=${t}1 ;}
+    t=${t#=};tt=${t#-}; ((tt++)) ||{ tt=2;t=${t}1 ;}
     (((d-=t)<e)) &&{ T=$d;d=$e;e=$T; }
+    ((e==d))&&((d>25))&&{ echo $d is beyond the max 25 lines shown;continue;}
    }
-   ((e==d))&&((d>25))&&{ echo $d is beyond the max 25 lines shown;continue;}
-   ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
   fi
+  ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
   ((l=1+HISTCMD-((D=d+U))));let E=e+U
   u=;b='line was'
-  ((t)) &&{ let u=-l-t; b="$((++tt)) lines were";s=s ;}
+  ((t)) &&{ let u=-l-t; b="$tt lines were";s=s ;}
   ((E<=0)) &&{ ((k=-(--E))); j=`history |head $E` ;}
   IFS=$'\n';for i in `history $D | head -$tt` $j;{
    [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
