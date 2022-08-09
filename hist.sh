@@ -48,11 +48,11 @@ else
 		esac
 	done
 fi
-if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\+ -|\ +--[1-9][0-9]*-?[0-9]*)+)(\ +(.*))?$ ]];then
+if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\+ -|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
  for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
  Z=${BASH_REMATCH[6]}
  [[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
-else Z=${m# }
+else Z=$m
 fi
 eval set -- $s
 for n ;{ unset e i j k l u s z M R F
@@ -102,8 +102,6 @@ for n ;{ unset e i j k l u s z M R F
    ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
   fi
   ((l=1+HISTCMD-((D=d+U))));let E=e+U
-  U=$U
-  l=$l
   u=;b='line was'
   ((t)) &&{ let u=-l-t; b="$((++tt)) lines were";s=s ;}
   ((E<=0)) &&{ ((k=-(--E))); j=`history |head $E` ;}
@@ -111,7 +109,7 @@ for n ;{ unset e i j k l u s z M R F
    [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
    printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}"
   }
-  echo -en '\e[1;32m';read -N1 -p "Delete $t line$s above from command history? (Enter: yes. Else: no) " o
+  echo -en '\e[1;32m';read -N1 -p "Delete $tt line$s above from command history? (Enter: yes. Else: no) " o
   [[ $o = $'\xa' ]] ||{ continue;}
   history -w /tmp/.bash_history0||{
    echo cannot backup current history for reverting later;R=1;}
