@@ -2,6 +2,12 @@ Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to `~
 
 Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a string segment lying in a history line.   
 
+##Requiremnts##
+Bash 5
+sed
+head
+bash code `export HISTCONTROL=erasedups:ignoredups`
+
 simply type `h` then it'll show the latest 25 lines of shell commands e.g:   
 ```
 $ h   
@@ -17,7 +23,7 @@ $ h
   377  cd  
   378  cd debian/   
   379  cat -n install   
-Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else: as string to erase 
+Up/Down. n[=-n] by line or else string:Up/Down. n[=-n] by line or else string: 
 ```
 - Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
 - Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
@@ -27,7 +33,7 @@ Next 25? Up/Down: to earlier/later, [-]n[-][n] erase by range, Enter: out. Else:
 - all the above number range can be given out of the currently shown lines as long as max by 17 lines downwardly less than the lowest one or upwardly more than the highest one being shown now. This in order to prevent overlooking   
 - put in such `[-]-number[-number]`, it will delete the number ordered from the end (reverse order line number), or if the dash is two, the last number lines, all are relative to lines list being shown then. For example:   
 - put a dash and a number e.g. `-5`, will remove the 5th line ordered from the last of lines being shown. A single dash alone `-` is short for `-1` to remove the last line    
-- likewise above with appending `=` and a number: `-5=3`, is to remove the 5th line ordered from the last, also including the next 3 lines, and `-5=-3` is to remove the 5th line ordered from the last, also the 3 lines preceding it. Omitting the number `-5=` means the number is 1, so equivalent to `-5=1`    
+- likewise above with appending `=` and a number: `-5=3`, is to remove the 5th line ordered from the last including also the next 3 lines, and `-5=-3` is to remove the 5th line ordered from the last, also the 3 lines preceding it. Omitting the number `-5=` means the number is 1, so equivalent to `-5=1`    
 - put two dash in a row then number: `--5`, will remove the last 5 lines relative to the last lines being shown.   
 - likewise above with addition -number to except the last that number lines, e.g. `--5-2` remove the last 5 lines but the latest 2 lines, `--5-` will remove the last 5 lines but the last line   
 - or put anything else, it'll be treated as the characters of substring of a command line in hisory as long as it has at least 3 characters. Any history command line having that string will be searched and printed before being removed. Now if the left/right end is made adjacent with space, that end will be anchored as the first/last string to search, so surrounding it with spaces will turn it to be exact string to match instead of substring   
