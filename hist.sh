@@ -1,46 +1,39 @@
 h(){ # BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
-G=1;[[ $1 ]] ||{
- G=;L=25;U=0;i=;did=
- IFS=$'\n';for e in `history 25` ;{
-  if((i++%5)) ;then echo $e
-  else echo $'\e[44;1;37m'$e$'\e[m';fi;}
+G=1
+[[ $1 ]] ||{
+ G=;L=25;U=0;i=;did=;IFS=$'\n'
+ for e in `history 25`;{ if((i++%5)) ;then echo $e; else echo $'\e[44;1;37m'$e$'\e[m';fi;}
 }
 while : ;do
-unset IFS i s
-if((G));then m=$*
+if((G));then m=$*   # CLI arguments
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]];((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
  while : ;do
- 	u=;IFS=''
-  read -sN1 -p "`echo $'\r\e[K\e[45;1;37m'`Up/Down. n[=-n] by line or else string: " m;echo -n $'\e[m'
+  read -sN1 -p "`echo $'\r\e[K\e[45;1;37m'`Up/Down, n[=-n] by line or else string: " m;echo -n $'\e[m'
 		case $m in
 		$'\x1b') # \e ESC
-			read -N 1 m
+			read -N1 m
 			if [[ $m != [ ]] ;then return
 			else
-				read -N 1 m; echo
-   	IFS=$'\n'
+				read -N1 m
+    echo;IFS=$'\n';u=;i=;
 				case $m in
 				A) #UP
      U=$L
-					if((((L+=25))>B)) ;then
-						let L-=B
+					if(((L+=25)>=B)) ;then let L-=B
 						for e in `history $L;history |head -$((25-L))` ;{
-       if((i++%5)) ;then echo $e
-       else echo $'\e[44;1;37m'$e$'\e[m';fi;}
+       if((i++%5)) ;then echo $e; else echo $'\e[44;1;37m'$e$'\e[m';fi;}
 					else
-    		for e in `history $L | head -25`;{
-       if((i++%5)) ;then echo $e
-       else echo $'\e[44;1;37m'$e$'\e[m';fi;}   
+    		for e in `history $L |head -25`;{
+       if((i++%5)) ;then echo $e; else echo $'\e[44;1;37m'$e$'\e[m';fi;}   
 					fi;;
 				B) #DN
      L=$U
-					((((U-=25))<0)) &&{ u=`history| head $U`;	let U+=B;}
-     for e in `history $L | head -25` $u;{
-      if((i++%5)) ;then echo $e
-      else echo $'\e[44;1;37m'$e$'\e[m';fi;}
+					(((U-=25)<0)) &&{ u=`history| head $U`;	let U+=B;}
+     for e in `history $L |head -25` $u;{
+      if((i++%5)) ;then echo $e; else echo $'\e[44;1;37m'$e$'\e[m';fi;}
 				esac
 			fi;;
 		$'\xa')	echo;break 2;;
@@ -48,14 +41,13 @@ else
 		esac
 	done
 fi
-if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
+if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then s=
  for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
- Z=${BASH_REMATCH[6]}
- [[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
+ Z=${BASH_REMATCH[6]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
 else Z=$m
 fi
 eval set -- $s
-for n ;{ unset e i j k l u s t z L M R F
+for n ;{ unset e i j k l u s tt z L M R F
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen...\e[m'
  if [[ $n =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   ((u=l=(l=BASH_REMATCH[1])? l:1))
@@ -88,19 +80,19 @@ for n ;{ unset e i j k l u s t z L M R F
   if((d=BASH_REMATCH[3])) ;then
    [[ ${BASH_REMATCH[4]} ]] && e=${BASH_REMATCH[5]:-1}
    ((e>=d)) || ((d>25)) &&{ echo $n: invalid range;continue;}
-   let tt=t=d-++e;let tt++
+   let tt=t=d-++e
   else
    ((e=d=(d=BASH_REMATCH[1])?d:1))
-   tt=1;t=${BASH_REMATCH[2]}
+   t=${BASH_REMATCH[2]}
    [[ $t ]] &&{
-    t=${t#=};tt=${t#-}; ((tt++)) ||{ tt=2;t=${t}1 ;}
+    t=${t#=};tt=${t#-}; ((tt)) ||{ tt=1;t=${t}1 ;}
     (((d-=t)<e)) &&{ T=$d;d=$e;e=$T; }
     ((e==d))&&((d>25))&&{ echo $d is beyond the max 25 lines shown;continue;}
    }
   fi
   ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
   ((l=1+HISTCMD-((D=d+U))));let E=e+U
-  u=;b='line was'
+  let tt++; b='line was'
   ((t)) &&{ let u=-l-t; b="$tt lines were";s=s ;}
   ((E<=0)) &&{ ((k=-(--E))); j=`history |head $E` ;}
   IFS=$'\n';for i in `history $D | head -$tt` $j;{
@@ -154,9 +146,8 @@ for n ;{ unset e i j k l u s t z L M R F
  echo -en '\e[1;32m'
  read -N1 -p "Delete $((z+1)) line$s above from command history? (Enter: yes. Else: no) " o
  [[ $o = $'\xa' ]] ||{ continue;}
- history -w /tmp/.bash_history0||{
-   echo cannot backup current history for reverting later;R=1;}
- for ((i=z; i>=0; i--)){
+ history -w /tmp/.bash_history0||{ echo cannot backup current history for reverting later;R=1;}
+ for((i=z;i>=0;i--)) {
   history -d ${l[i]} 2>/dev/null ;};did=1
  echo -e "Finished, the $((z+1)) $b deleted\e[m"
  L=;let F=l-1
@@ -174,7 +165,7 @@ for n ;{ unset e i j k l u s t z L M R F
 }
 ((G))&&break
 done
-((did)) &&{
+((did)) &&{ s=
  ((R)) ||s='. Else: No, revert back'
  read -sN1 -p "Save the modified history (Enter: Yes. N/n: No$s)? " o
 	if [[ $o = $'\xa' ]];then
