@@ -48,14 +48,14 @@ else
 		esac
 	done
 fi
-if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\+ -|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
+if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
  for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
  Z=${BASH_REMATCH[6]}
  [[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
 else Z=$m
 fi
 eval set -- $s
-for n ;{ unset e i j k l u s tt z M R F
+for n ;{ unset e i j k l u s t z L M R F
  [[ $n != $1 ]] && echo -e '\e[40;1;32mThen...\e[m'
  if [[ $n =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   ((u=l=(l=BASH_REMATCH[1])? l:1))
@@ -91,7 +91,7 @@ for n ;{ unset e i j k l u s tt z M R F
    let tt=t=d-++e;let tt++
   else
    ((e=d=(d=BASH_REMATCH[1])?d:1))
-   t=${BASH_REMATCH[2]}
+   tt=1;t=${BASH_REMATCH[2]}
    [[ $t ]] &&{
     t=${t#=};tt=${t#-}; ((tt++)) ||{ tt=2;t=${t}1 ;}
     (((d-=t)<e)) &&{ T=$d;d=$e;e=$T; }
@@ -109,16 +109,14 @@ for n ;{ unset e i j k l u s tt z M R F
   }
   echo -en '\e[1;32m';read -N1 -p "Delete $tt line$s above from command history? (Enter: yes. Else: no) " o
   [[ $o = $'\xa' ]] ||{ continue;}
-  history -w /tmp/.bash_history0||{
-   echo cannot backup current history for reverting later;R=1;}
-  M="\e[40;1;32m as specified by \e[41;1;37m$n"
-  n=$l$u
+  history -w /tmp/.bash_history0||{ echo cannot backup current history for reverting later;R=1;}
+  M="\e[40;1;32m as specified by \e[41;1;37m$n";n=$l$u
   unset IFS;for i in `eval echo {$D..$E}` ;{ history -d -$i 2>/dev/null;}
   ((k)) &&{ for((i=k; i>0; --i)){ history -d $i 2>/dev/null;}; n=$l-1-$k;}
   did=1
  fi
  echo -e "\e[1;32mThe $b deleted\e[m"
- L=;let F=l-1
+ let F=l-1
  ((l>11)) &&{ let L=HISTCMD-l+12 ; F=11 ;}
  ((l<12)) && history $((11-F))
  history $L | head -$F
