@@ -94,7 +94,7 @@ for a ;{ unset e i j m mm u tt M R F W
    [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
    printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}"
   }
-  n=$l;m=\ was
+  let n=u=l;m=\ was
   ((t))&&{ n="$l-$((u=1+HISTCMD-E)) ($tt lines)"
    ((W))&&{ u=$HISTCMD;o=;((l!=HISTCMD)) &&o=-$u; n="$l$o-1-$W ($tt lines)";}
    m=s\ were
