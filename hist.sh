@@ -40,19 +40,19 @@ else
 		esac
 	done
 fi
-s=;if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]+|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
+s=;if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]*|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
  for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
  Z=${BASH_REMATCH[6]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
 else Z=$m
 fi
 eval set -- $s
 T=;TL=;n=;((S=25/2/((ME=${#*})? ME: 1)))
-for a ;{ unset e i j k m mm u tt M R F
- [[ $a != $1 ]] && echo -e '\e[40;1;32mand:\e[m'
+for a ;{ unset e i j m mm u tt M R F W
+ [[ $a != $1 ]] && echo -en '\e[40;1;32mand\e[m '
  if [[ $a =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   ((u=l=(l=BASH_REMATCH[1])? l:1))
   [[ ${BASH_REMATCH[2]} ]] &&{ u=${BASH_REMATCH[4]}
-   if [ ${BASH_REMATCH[3]} = - ] ;then : ${u:=$HISTCMD}; ((u=u?u:1))
+   if [ ${BASH_REMATCH[3]} = - ] ;then : ${u:=$((HISTCMD-U))}; ((u=u?u:1))
    else ((u=${BASH_REMATCH[3]#=}(u=u?u:1)+l))
    fi
   }
@@ -89,19 +89,21 @@ for a ;{ unset e i j k m mm u tt M R F
   ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
   ((l=1+HISTCMD-(D=d+U)));let E=e+U
   let tt++
-  ((E<=0)) &&{ ((k=-(--E))); j=`history |head $E` ;}
+  ((E<=0)) &&{ ((W=-(--E))); j=`history |head $E` ;}
   IFS=$'\n';for i in `history $D | head -$tt` $j;{
    [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
    printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}"
   }
   n=$l;m=\ was
-  ((t)) &&{ n="$l-$((u=1+HISTCMD-E)) ($tt lines)";m=s\ were
+  ((t))&&{ n="$l-$((u=1+HISTCMD-E)) ($tt lines)"
+   ((W))&&{ u=$HISTCMD;o=;((l!=HISTCMD)) &&o=-$u; n="$l$o-1-$W ($tt lines)";}
+   m=s\ were
   }
   mm=" as specified `echo $'\e[41;1;37m'$a`"
  fi
  M="<--- the deleted line$m here `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'`"
  T="`eval echo {$u..$l}` '$l$M' $T" # Join all removed lines with "$l$M"
- ((k))&& T="$T `eval echo {$k..1}` 1<-"
+ ((W))&& T="$T `eval echo {$W..1}` '1$M'"
  
  let TL+=tt
 }
@@ -116,7 +118,7 @@ unset IFS LN;eval set -- $T; for e
 {
  history -d $e 2>/dev/null ||{ unset L H
   ((i=(To-=2*S)))
-  l=${e%<-*}
+  l=${e%<*}
   let F=l-1
   IFS=$'\n'
   if((l>S)) ;then let L=1+HISTCMD-l+S; F=$S
@@ -125,7 +127,7 @@ unset IFS LN;eval set -- $T; for e
   fi
   for j in `history $L | head -$F`;{ LN[i++]=$j ;}
   LN[i++]="  `echo $'\e[1;32m'${e#$l}`"
-  ((k)) || let H=1+HISTCMD-l
+  ((H=W? HISTCMD: 1+HISTCMD-l))
   ((U=H>S? S: H))
   ((H)) &&for j in `history $H |head -$U`;{ LN[i++]=$j ;}
   let U=H-U
@@ -134,8 +136,7 @@ unset IFS LN;eval set -- $T; for e
    for j in `history |head -$U`;{ LN[i++]=$j ;}
    let U=HISTCMD-U
   }
-  LN[i++]='         ~~~~~~~~~~~~~~~'
-  let To-=2
+  let To-=2;LN[i++]='         ~~~~~~~~~~~~~~~'
  }
 }
 echo "...deleted";did=1
