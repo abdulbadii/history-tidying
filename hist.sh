@@ -7,11 +7,11 @@ G=1
  for e in `history 25`;{ if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 }
 while : ;do
-if((G));then m=$*   # CLI argument way
+if((G));then m=$* #CLI argument way
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]];((B=1+HISTCMD-(OF=BASH_REMATCH[1])))
  while : ;do
-  read -sN1 -p "`echo $'\r\e[K\e[45;1;37m'`Up/Down, n[=-n] by line, else string: " m;echo -n $'\e[m'
+  read -sN1 -p "`echo $'\r\e[K\e[44;1;37m'`Up/Down, n[=-n] by line, else string: " m;echo -n $'\e[m'
 		case $m in
 		$'\x1b') # \e ESC
 			read -N1 m
@@ -46,8 +46,8 @@ s=;if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]*|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ 
 else Z=$m
 fi
 eval set -- $s
-T=;TL=;n=;((S=25/2/((ME=${#*})? ME: 1)))
-for a ;{ unset e i j m mm u tt M R F W
+unset T TL W;((S=25/3/((ME=${#*})? ME: 1)))
+for a ;{ unset e i j n m mm u tt M R F
  [[ $a != $1 ]] && echo -en '\e[40;1;32mand\e[m '
  if [[ $a =~ ^([0-9]+)((=-?|-)([0-9][0-9]*)?)?$ ]];then
   ((u=l=(l=BASH_REMATCH[1])? l:1))
@@ -87,12 +87,13 @@ for a ;{ unset e i j m mm u tt M R F W
    }
   fi
   ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
-  ((l=1+HISTCMD-(D=d+U)));let E=e+U
+  ((l=1+HISTCMD-(D=d+U)))
+  ((D>HISTCMD)) &&{ let l=1-D+2*HISTCMD;let D=1+HISTCMD-l ;}
   let tt++
-  ((E<=0)) &&{ ((W=-(--E))); j=`history |head $E` ;}
-  IFS=$'\n';for i in `history $D | head -$tt` $j;{
-   [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
-   printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}"
+  (((E=e+U)<=0)) &&{ ((W=-(--E))); j=`history |head $E` ;}
+  IFS=$'\n';for i in `history $D |head -$tt` $j
+  { [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
+    printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}"
   }
   let n=u=l;m=\ was
   ((t))&&{ n="$l-$((u=1+HISTCMD-E)) ($tt lines)"
