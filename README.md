@@ -23,10 +23,10 @@ $ h
   377  cd  
   378  cd debian/   
   379  cat -n install   
-Up/Down. n[=-n] by line or else string:Up/Down. n[=-n] by line or else string: 
+Up/Down. n[=-n] by line or else string: 
 ```
-- Up key, will show continuation of line 367 downwardly to less line number by 25 lines if it is 1st line, it will wrap around showing the latest line to its next ones
-- Down key, will show next 25 lines, if reaches the latest, it shows beginning of history line again i.e. it will wrap around   
+- Up key, will show continuation of line 367 to its next 25 lines downwardly, if it is 1st line, it will wrap around showing the latest line to its next 25 ones
+- Down key, will show next 25 lines, if reaches the latest, it will wrap around showing the beginning of history line again    
 - Enter key will go out back to shell prompt   
 - put a number such as 367, it will remove line 367, or `367 371-373` or `367 373-371` to remove lines 367, 371, 372, 373 (reverse range boundary numbers doesn't matter). Note the requirement: A one line **multiple numbers/ranges values must be in ascending order** for any number range format (such above or e.g. `--3` is less than `--7`) otherwise it'd delete erronously. Without a range upper number, it'd default to the last of the currently listed lines i.e. `371-` is to delete lines 371, 372, ...379   
 - for the same purpose above can be put as `371=2`. It means 371 and 2 lines succeding it i.e. 371-373 while `371=-3` means 371 and the 3 lines preceding it i.e. 368-371    
