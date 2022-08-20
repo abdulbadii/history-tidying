@@ -88,7 +88,7 @@ for a ;{ unset e i j n m mm u tt M R F
   fi
   ((d>25+17))||((e<-17))&&{ echo line number $t span to 17 lines beyond the min/max line shown;continue;}
   ((l=1+HISTCMD-(D=d+U)))
-  ((D>HISTCMD)) &&{ let l=1-D+2*HISTCMD;let D=1+HISTCMD-l ;}
+  ((D>HISTCMD)) &&{ let l=1+2*HISTCMD-D;let D=1+HISTCMD-l ;}
   let tt++
   (((E=e+U)<=0)) &&{ ((W=-(--E))); j=`history |head $E` ;}
   IFS=$'\n';for i in `history $D |head -$tt` $j
@@ -97,7 +97,7 @@ for a ;{ unset e i j n m mm u tt M R F
   }
   let n=u=l;m=\ was
   ((t))&&{ n="$l-$((u=1+HISTCMD-E)) ($tt lines)"
-   ((W))&&{ u=$HISTCMD;o=;((l!=HISTCMD)) &&o=-$u; n="$l$o-1-$W ($tt lines)";}
+   ((W))&&{ u=$HISTCMD; o=;((l!=HISTCMD))&&o=-$u; n="$l$o-1-$W ($tt lines)";}
    m=s\ were
   }
   mm=" as specified `echo $'\e[41;1;37m'$a`"
@@ -149,8 +149,8 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  s=${s//\+/\\+};s=${s//\|/\\|};s=${s//\^/\\^};s=${s//\?/\\?};
  s=${s//\[/\\[};s=${s//\(/\\(};s=${s//\{/\\{}
  s=${s//\]/\\]};s=${s//\)/\\)};s=${s//\}/\\'}'};s=${s//\$/\\\$}
- S=${Z# }; S=${S% }
- if((${#S}>2)) ;then
+ m=${Z# }; m=${m% }
+ if((${#m}>2)) ;then
   if [[ $s =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then s="()(${BASH_REMATCH[1]})(.*)"
   elif [[ $s =~ ^([[:graph:]].*)[[:space:]]$ ]] ;then	s="(.*)(${BASH_REMATCH[1]})()"
   elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="()(${BASH_REMATCH[1]})()"
@@ -163,28 +163,26 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  }
  ((z)) ||{ echo -e "\e[41;1;37m$Z\e[m wasn't found, did nothing";continue;}
  ((u=-z+(H=l[--z]))) # l = l[0]
- if ((z)) ;then
-  b='lines were'
-  ((H-l>z)) &&M=", interlined with the undeleted lines";s=s
- else b='line was';s=;fi
- echo -en '\e[1;32m'
- read -N1 -p "Delete $((z+1)) line$s above from command history? (Enter: yes. Else: no) " o
- [[ $o = $'\xa' ]] ||{ continue;}
+ m='line'; s='was'
+ ((z))&&{ m="$((z+1)) lines"; s='were'
+  ((H-l>z)) && M=", interlined with the undeleted lines"
+ }
+ echo -en '\e[1;32m';read -N1 -p "Delete the $m above from command history? (Enter: yes. Else: no) " o
+ [[ $o = $'\xa' ]] ||continue
  history -w /tmp/.bash_history0||{ echo cannot backup current history for reverting later;R=1;}
- for((i=z;i>=0;i--)) {
-  history -d ${l[i]} 2>/dev/null ;};did=1
- echo -e "Finished, the $((z+1)) $b deleted\e[m"
+ for((i=z;i>=0;)){ history -d ${l[i--]} ;};did=1
+ echo -e "The $m $s deleted\e[m"
  L=;let F=l-1
- if((l>11)) ;then let L=HISTCMD-l+12; F=11
- else history $((11-F));fi
+ if((l>S)) ;then let L=1+HISTCMD-l+S; F=$S
+ else history $((S-F));fi
  history $L | head -$F
- echo -e "  \e[40;1;32m<-- Here the deleted $b$M, as search of \e[41;1;37m$Z\e[m"
+ echo -e "  \e[40;1;32m<-- The $m deleted $s here$M, as search of \e[41;1;37m$Z\e[m"
  let H=HISTCMD-u
- ((U=H>11? 11: H))
+ ((U=H>S? S: H))
  ((H)) && history $H |head -$U
  let U=H-U
- ((H<12)) &&{
-  let U=11-H; history |head -$U
+ ((H<=S)) &&{ let U=S-H
+  history |head -$U
   let U=HISTCMD-U;}
 }
 ((G))&&break
