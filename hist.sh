@@ -21,7 +21,7 @@ else
 				case $m in
 				A) #UP
      U=$L
-					(((L+=25)>=B)) &&{ u=`history |head -$((B-L))`;let L-=B ;}
+					(((L+=25)>=B)) &&{ let L-=B;u=`history |head -$((25-L))` ;}
 						for e in `history $L|head -25` $u ;{
        if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 					;;
