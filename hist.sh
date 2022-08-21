@@ -26,8 +26,7 @@ else
        if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 					;;
 				B) #DN
-     ((L=U?U:B))
-					((U)) && (((U-=25)<0)) &&{ u=`history|head $U`;	let U+=B;}
+     (((U=(L=U?U:B)-25)<0)) && { u=`history|head $U`;	let U+=B;}
      for e in `history $L |head -25` $u;{
       if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 				esac
@@ -43,8 +42,8 @@ s=;if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]*|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ 
 else Z=$m
 fi
 eval set -- $s
-unset T TL W;((S=25/3/((ME=${#*})? ME: 1)))
-for a ;{ unset e i j n m mm u tt M R F
+unset T TL;((S=25/3/((ME=${#*})? ME: 1)))
+for a ;{ unset e i j n m mm u tt M R F WU W
  [[ $a != $1 ]] && echo -en '\e[40;1;32mand\e[m '
  let M=HISTCMD-U # Max & min line in list shown
  let m=1+HISTCMD-L
@@ -53,18 +52,19 @@ for a ;{ unset e i j n m mm u tt M R F
   [[ ${BASH_REMATCH[2]} ]] &&{ u=${BASH_REMATCH[4]}
    if [ ${BASH_REMATCH[3]} = - ] ;then
     : ${u:=$M}; ((u=u?u:1))
+    ((u>HISTCMD))||((l<OF)) &&{ echo Command history starting-end line numbers: $OF-$HISTCMD;continue;}
    else ((u=${BASH_REMATCH[3]#=}(u=u?u:1)+l));fi
   }
   ((u<l)) &&{ TM=$u;u=$l;l=$TM; }
-  ((u>HISTCMD))||((l<OF)) &&{ echo Command history starting-end line numbers: $OF-$HISTCMD;continue;}
   if((l<m-17)) ;then echo $l is 17 less than the min line $m shown;continue
   elif((u>M+17)) ;then echo $u is 17 more than the max line $M shown;continue;fi
   let tt=u-l+1
-  IFS=$'\n';for i in `history $((1+HISTCMD-l)) | head -$tt`;{
+  ((l<=0)) &&{ tt=$u; let WU=-l; j=`history $((WU+1))`;}
+  IFS=$'\n';for i in $j `history $((1+HISTCMD-l)) | head -$tt`;{
    [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
    printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}"
   }
-  n=$l;p=\ was; ((l!=u))&&{ n="$l-$u ($tt lines)";p=s\ were;}
+  n=$l;p=\ was; ((l!=u))&&{ n="$l-$u ($((tt+=WU+1)) lines)";p=s\ were;}
  else
   [[ $a =~ ^-([1-9][0-9]*)?(=-?[0-9]*)?$|^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]]
   if((d=BASH_REMATCH[3])) ;then
@@ -83,8 +83,8 @@ for a ;{ unset e i j n m mm u tt M R F
   let l=u=1+M
   let l-=d;let u-=e
   ((L<U)) &&{ let l+=HISTCMD;let D-=HISTCMD; let u+=HISTCMD;let E-=HISTCMD ;}
-  ((E<=0)) &&{
-   ((W=-(--E))); j=`history |head $E` ;}
+  ((--E<0)) &&{
+    let W=-E; j=`history |head $E` ;}
   let tt++
   IFS=$'\n';for i in `history $D |head -$tt` $j
   { [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
@@ -92,17 +92,23 @@ for a ;{ unset e i j n m mm u tt M R F
   }
   let n=l;p=\ was
   ((t))&&{ n="$l-$u ($tt lines)"
-   ((W))&&{ u=$HISTCMD; o=;((l!=HISTCMD))&&o=-$u; n="$l$o-1-$W ($tt lines)";}
+   ((W))&&{ u=$HISTCMD; o=;((l!=u))&&o=-$u; n="$l$o-1-$W ($tt lines)";}
    p=s\ were
   }
   mm=" as specified `echo $'\e[41;1;37m'$a`"
  fi
  ((u==l))&&( ((u>M))||((u<m)) ) &&{ echo line number $l is beyond the list shown;continue;}
  M="<--- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'`"
- T="`eval echo {$u..$l}` '$l$M' $T" # Join about-to-be removed lines with "$l$M"
- ((W))&& T="$T `eval echo {$W..1}` '1$M'"
  let TL+=tt
+ ((W))||((WU)) &&continue
+ T="`eval echo {$u..$l}` '$l$M' $T" # Join about-to-be removed lines with "$l$M"
 }
+((WU))&&{
+ T="`eval echo {$HISTCMD..$((HISTCMD-WU))}` '1$M' $T `eval echo {$u..1}`"
+ WU=;}
+((W))&&{
+ T="$T `eval echo {$W..1}` '1$M'"
+ W=;}
 ((To=TO=2*ME*(S+1)-2))
 ((TL)) &&{ s=
 if((TL==1)) ;then TL=above ;else s=s;fi
