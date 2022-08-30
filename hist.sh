@@ -63,7 +63,7 @@ for a ;{ unset i j k mm e l u t z F LO HI R W
    t=${BASH_REMATCH[2]}
    [[ $t ]] &&{ t=${t#=};z=${t#-}; ((z=z?t:${t}1)) ;}
   fi
-  ((u=(l=l?l: 1+M-d)+z)); z=${z#-}
+  ((u=(l=l?l: 1+M-d)+z)); z=${z#-}; let ++z
   mm=" as specified `echo $'\e[41;1;37m'$a`"
  fi
  ((m<M)) && (((l<m)) || ((l>M))) ||
@@ -74,7 +74,7 @@ for a ;{ unset i j k mm e l u t z F LO HI R W
  if((l==u)) ;then s="history $((1+HISTCMD-l)) |head -1"; p=\ was;n=$l
  else
   ((u<l)) &&{ T=$l;l=$u;u=$T ;}
-  ((z=(z?z:u-l)+1))
+  ((z=z?z:u-l+1))
   if((l<=0)) ;then
    ((m>M)) && ((l+ HISTCMD-m+9<0)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
    s="history $((W=-l+1)); history|head $u"
@@ -124,13 +124,13 @@ for e in `eval echo $C` ;{
    for j in `history |head -$U`;{ LN[i++]=$j ;}
    let U=HISTCMD-U
   }
-  let To-=2;LN[i++]='         ~~~~~~~~~~~~~~~'
+  let To-=2;LN[i++]='            ~~~~~~~'
  }
 }
 echo "...deleted";did=1
 for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
 }
-[[ $Z ]] &&{ z=
+[[ $Z ]] &&{
  s=${Z//\\/\\\\};s=${s//\\\\./\\.};s=${s//\"/\\\"}
  s=${s//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
  s=${s//\+/\\+};s=${s//\|/\\|};s=${s//\^/\\^};s=${s//\?/\\?};
@@ -143,7 +143,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
   elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="()(${BASH_REMATCH[1]})()"
   elif [[ $s =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then s="(.*)($s)(.*)";fi
  fi
- for i in `history |sed -nE "/^\s+[0-9]+\*?\s+$s$/p"`;{
+ z=;for i in `history |sed -nE "/^\s+[0-9]+\*?\s+$s$/p"`;{
   [[ $i =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]+$s ]]
   printf "\e[1;36m% 4d \e[m%s\e[41;1;37m%s\e[m%s\n" $((l[z++]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
  }
