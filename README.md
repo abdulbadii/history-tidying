@@ -2,11 +2,11 @@ Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to `~
 
 Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a string segment lying in a history line.   
 
-##Requiremnts##
-Bash 5
+###Requiremnts###   
+Bash 5/newer
 sed
 head
-bash code `export HISTCONTROL=erasedups:ignoredups`
+recommended environment variable set: `export HISTCONTROL=erasedups:ignoredups`
 
 simply type `h` then it'll show the latest 25 lines of shell commands e.g:   
 ```
@@ -40,13 +40,12 @@ Up/Down. n[=-n] by line or else string:
 - likewise above but it has only 1 or 2 printable characters, it will be assumed to find this string as exact, whole line. Alternatively it can be made as a substring search if either one is, or both are, `.`   
 - if input character with `.` (single period) it becomes just OS shell `?` wildcard character, while the literal periode is input with `\.`     
 - if input character with `...` (three period in a row) it becomes just OS shell `*` wildcard character    
-- Do all these finely as it can behave as the shell prompt function (it's well termed as `readline`) by A space at first then up/down key to retrieve the command
+- Do all these easily as it can be as the shell prompt function (well termed as `readline`) by hitting backspace first to get in shell prompt behavour (up/down key to retrieve a command)   
 
 If one already knew the number or the searched string, then just put directly in shell/terminal prompt to delete it such as:   
-`$ h 371-375 367`   
-`$ cd /home`
+`$ h 371-373 -1`   
 
-It'b be also as history alias i.e.
+It's also a history alias i.e.   
 
 `$ h --help`   
 shows history command's helpful reference

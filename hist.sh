@@ -16,8 +16,7 @@ else
 		case $m in
 		$'\x1b') # \e
 			read -N1 m
-			if [[ $m != [ ]] ;then return
-			else
+			#[[ $m != [ ]] &&return 3*
 				read -N1 m;echo;u=;i=
 				case $m in
 				A) #UP
@@ -27,10 +26,10 @@ else
      (((U=(L=U?U:H)-25)<0)) &&{ u=`history|head $U`;	let U+=H;}
 				esac
     IFS=$'\n';for e in `history $L |head -25` $u;{
-     if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
-			fi;;
+     if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;};;
 		$'\xa')	echo;break 2;;
-		*) read -rei "$m" m; break
+  $'\x7f') echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re m;break;;
+  *) read -rei "$m" m; break
 		esac
 	done
 fi
@@ -41,7 +40,7 @@ else Z=$m
 fi
 eval set -- $s
 unset C TL;((N=25/3/((NE=${#*})? NE: 1)))
-for a ;{ unset i j k mm e l u t z F LO HI R W
+for a ;{ unset i j mm e l u t z F LO HI R W
  [[ $a != $1 ]] &&echo -en '\e[40;1;32mand\e[m '
  let M=HISTCMD-U; let m=1+HISTCMD-L   # Max & min shown
  IFS=$'\n'
@@ -71,9 +70,11 @@ for a ;{ unset i j k mm e l u t z F LO HI R W
  ((m<M)) &&{
   ((l<m-9)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
   ((u>M+9))&&{ echo $u is above the max $M shown, by 9 or more lines;continue;};}
- if((l==u)) ;then s="history $((1+HISTCMD-l)) |head -1"; p=\ was;n=$l
+ ((u<l)) &&{ T=$l;l=$u;u=$T ;}
+ s=history\ $((1+HISTCMD-l))
+ if((l==u));then
+  s="$s |head -1"; p=\ was;n=$l
  else
-  ((u<l)) &&{ T=$l;l=$u;u=$T ;}
   ((z=z?z:u-l+1))
   if((l<=0)) ;then
    ((m>M)) && ((l+ HISTCMD-m+9<0)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
@@ -82,10 +83,11 @@ for a ;{ unset i j k mm e l u t z F LO HI R W
    LO={$HISTCMD..$t}; HI={$u..1}
   elif((u>HISTCMD)) ;then
    ((m>M)) && ((u>HISTCMD+M+9)) &&{ echo $u is above the max $M shown, by 9 or more lines;continue;}
+   s="$s; history |head -$W"
    n="$l-$HISTCMD,1-$((W=u-HISTCMD))"
-   s="history $((1+HISTCMD-l)); history |head -$W"
    LO={$HISTCMD..$l}; HI={$W..1}
-  else n=$l-$u; s="history $((1+HISTCMD-l)) |head -$z"
+  else
+   s="$s|head -$z" ;n=$l-$u
   fi
   p=s\ were; n="$n ($z lines)"
  fi
