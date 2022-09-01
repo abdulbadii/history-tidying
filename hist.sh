@@ -6,8 +6,8 @@ FG=1;IFS=$'\n'
  unset i FG U did;L=25
  for e in `history 25`;{ if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 }
-while : ;do
-if((FG));then m=$* #CLI argument way
+while :;do
+if((FG));then m=$* #by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
  (((H=1+HISTCMD-(OF=BASH_REMATCH[1]))<3)) &&{ echo too few history lines;return;}
@@ -62,20 +62,20 @@ for a ;{ unset i j mm e l u t z F LO HI R W
    t=${BASH_REMATCH[2]}
    [[ $t ]] &&{ t=${t#=};z=${t#-}; ((z=z?t:${t}1)) ;}
   fi
-  ((u=(l=l?l: 1+M-d)+z)); z=${z#-}; let ++z
+  ((u=z+(l=(l=1+M-d)<0? HISTCMD+l: l)))
+  z=${z#-}
   mm=" as specified `echo $'\e[41;1;37m'$a`"
  fi
  ((m<M)) && (((l<m)) || ((l>M))) ||
  (((m>M)) && ((l<m)) && ((l>M))) &&{ echo $l is beyond the min/max line shown;continue;}
- ((m<M)) &&{
-  ((l<m-9)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
-  ((u>M+9))&&{ echo $u is above the max $M shown, by 9 or more lines;continue;};}
+ ((m<M)) && (((u<m-9)) || ((u>M+9))) ||
+ (((m>M)) && ((u<m-9)) && ((u>M+9))) &&{ echo $u is 9 lines beyond the min/max line shown;continue;}
  ((u<l)) &&{ T=$l;l=$u;u=$T ;}
  s=history\ $((1+HISTCMD-l))
  if((l==u));then
   s="$s |head -1"; p=\ was;n=$l
  else
-  ((z=z?z:u-l+1))
+  ((z=z?++z:u-l+1))
   if((l<=0)) ;then
    ((m>M)) && ((l+ HISTCMD-m+9<0)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
    s="history $((W=-l+1)); history|head $u"
