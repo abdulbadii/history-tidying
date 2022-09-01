@@ -1,12 +1,12 @@
 h(){ # BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
-FG=1;IFS=$'\n'
+FG=1
 [[ $1 ]] ||{
- unset i FG U did;L=25
+ unset FG U did i;L=25;IFS=$'\n'
  for e in `history 25`;{ if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 }
-while :;do
+while :;do IFS=$'\n'
 if((FG));then m=$* #by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
@@ -16,7 +16,6 @@ else
 		case $m in
 		$'\x1b') # \e
 			read -N1 m
-			#[[ $m != [ ]] &&return 3*
 				read -N1 m;echo;u=;i=
 				case $m in
 				A) #UP
@@ -25,7 +24,7 @@ else
 				B) #DN
      (((U=(L=U?U:H)-25)<0)) &&{ u=`history|head $U`;	let U+=H;}
 				esac
-    IFS=$'\n';for e in `history $L |head -25` $u;{
+    for e in `history $L |head -25` $u;{
      if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;};;
 		$'\xa')	echo;break 2;;
   $'\x7f') echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re m;break;;
@@ -33,22 +32,22 @@ else
 		esac
 	done
 fi
-s=;if [[ \ $m =~ ^((\ +[0-9]+(-[0-9]*|=-?[0-9]*)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
- for Z in ${BASH_REMATCH[1]} ;{ s=$Z\ $s ;}
- Z=${BASH_REMATCH[6]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
+if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
+ s=${BASH_REMATCH[1]}
+ Z=${BASH_REMATCH[7]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
 else Z=$m
 fi
+unset IFS C TL
 eval set -- $s
-unset C TL;((N=25/3/((NE=${#*})? NE: 1)))
-for a ;{ unset i j mm e l u t z F LO HI R W
- [[ $a != $1 ]] &&echo -en '\e[40;1;32mand\e[m '
+((N=25/3/((NE=${#*})? NE: 1)))
+for a ;{ unset i j mm e l u t z LO HI W
+ [[ $a != $1 ]] &&echo -en '\e[37;1;32m*\e[m'
  let M=HISTCMD-U; let m=1+HISTCMD-L   # Max & min shown
- IFS=$'\n'
- if [[ $a =~ ^([0-9]+)(=-?|-)?([0-9][0-9]*)?$ ]];then
-  ((l=u=(l=BASH_REMATCH[1])? l:1))
+ if [[ $a =~ ^([1-9][0-9]*)(=-?|-)?([1-9][0-9]*)?$ ]];then
+  let l=u=BASH_REMATCH[1]
   [[ ${BASH_REMATCH[2]} ]] &&{
    u=${BASH_REMATCH[3]}
-   if [ ${BASH_REMATCH[2]} = - ] ;then ((u=${u:=$M}?u:1))
+   if [ ${BASH_REMATCH[2]} = - ] ;then : ${u:=$M}
    else ((u=l+${BASH_REMATCH[2]#=}(z=u?u:1))) ;fi
   }
  else
@@ -73,9 +72,9 @@ for a ;{ unset i j mm e l u t z F LO HI R W
  ((u<l)) &&{ T=$l;l=$u;u=$T ;}
  s=history\ $((1+HISTCMD-l))
  if((l==u));then
-  s="$s |head -1"; p=\ was;n=$l
+  z=1;s="$s |head -1"; p=\ was;n=$l
  else
-  ((z=z?++z:u-l+1))
+  ((z=z?1+z:u-l+1))
   if((l<=0)) ;then
    ((m>M)) && ((l+ HISTCMD-m+9<0)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
    s="history $((W=-l+1)); history|head $u"
@@ -91,33 +90,34 @@ for a ;{ unset i j mm e l u t z F LO HI R W
   fi
   p=s\ were; n="$n ($z lines)"
  fi
- for i in `eval $s`;{
+ IFS=$'\n';for i in `eval $s`;{
   [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
   printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}";}
- P="<--- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'`"
+ P="\''<-- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'` -->'\'"
  let TL+=z
  ((W)) &&continue
- C="{$u..$l} $l- $C"   # Join to-be-removed range entries with "$l-" token
+ C="{$u..$l} $l$P $C"   # Join to-be-removed range entries with "$l<" token
 }
-((W))&& C="$LO $C $HI 1-"
+((W))&& C="$LO $C $HI 1$P"
 ((To=TO=2*NE*(N+1)-2))
-((TL)) &&{ s=
-if((TL==1)) ;then TL=above;else s=s;fi
-echo -en '\e[1;32m'
-read -sN1 -p "Delete the $TL command history line$s? (Enter: yes. Else: no) " o;echo -en '\e[m'
+((TL)) &&{
+unset IFS s F LN R
+if((TL==1)) ;then TL=\ above
+else TL=se\ $TL;s=s;fi
+echo -en '\e[1;32m';read -sN1 -p "Delete the$TL line$s? (Enter: yes. Else: no) " o;echo -en '\e[m'
 [[ $o = $'\xa' ]] ||continue
 history -w /tmp/.bash_history0||{ echo cannot backup current history for reverting later;R=1;}
-unset IFS LN
-for e in `eval echo $C` ;{
- history -d $e 2>/dev/null ||{ unset L H
-  ((i=(To-=2*N)));l=${e%-*}
-  L=$HISTCMD;let F=l-1
+eval set -- `eval echo $C`
+for e;{
+ history -d $e 2>/dev/null ||{
+  ((i=(To-=2*N)));l=${e%<*}
+  H=;L=$HISTCMD;let F=l-1
   IFS=$'\n'
   if((l>N)) ;then let L+=1-l+N; F=$N
   else for j in `history $((N-F))`;{ LN[i++]=$j ;}
   fi
   for j in `history $L |head -$F`;{ LN[i++]=$j ;}
-  LN[i++]="  `echo $'\e[1;32m'$P`"
+  LN[i++]=" `echo $'\e[1;32m'${e#$l}`"
   ((U=(H=W? HISTCMD: 1+HISTCMD-l)>N? N: H))
   ((H)) &&for j in `history $H |head -$U`;{ LN[i++]=$j ;}
   let U=H-U
