@@ -6,7 +6,7 @@ FG=1
  unset FG U did i;L=25;IFS=$'\n'
  for e in `history 25`;{ if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
 }
-while :;do IFS=$'\n'
+while :;do IFS=$'\n';s=
 if((FG));then m=$* #by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
@@ -37,7 +37,7 @@ if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?
  Z=${BASH_REMATCH[7]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
 else Z=$m
 fi
-unset IFS C TL
+unset C TL W
 eval set -- $s
 ((N=25/3/((NE=${#*})? NE: 1)))
 for a ;{ unset i j k mm e l u t z LO HI W
@@ -87,13 +87,13 @@ for a ;{ unset i j k mm e l u t z LO HI W
    LO={$HISTCMD..$t}; HI={$u..1}
   elif((u>HISTCMD)) ;then
    ((m>M)) && ((u>HISTCMD+M+9)) &&{ echo $u is 9 or more lines above the max $M shown;continue;}
-   let W=u-HISTCMD
-   n=$l-$HISTCMD,1-$W
-   ((l>HISTCMD)) &&{ s=; let i=1+2*HISTCMD-l; n=$((l-HISTCMD))-$W; let W=u-l+1;}
-   s="$s; history $i|head -$W"
-   LO={$HISTCMD..$l}; HI={$W..1}
+   (((W=HISTCMD-u)==-1)) &&W=
+   n=$l-$HISTCMD,1$W
+   ((l>HISTCMD)) &&{ n=$((l-HISTCMD))$W; s=; ((i=1+2*HISTCMD-l,W=l-u-1));}
+   s="$s; history $i |head $W"
+   LO={$HISTCMD..$l}; HI={${W#-}..1}
   else
-   s="$s|head -$z" ;n=$l-$u
+   s="$s|head -$z";n=$l-$u
   fi
   p=s\ were; n="$n ($z lines)"
  fi
@@ -171,7 +171,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  if((l>N)) ;then let L=1+HISTCMD-l+N; F=$N
  else history $((N-F));fi
  history $L | head -$F
- echo -e "  \e[40;1;32m<-- The $m deleted $s here$P, as search of \e[41;1;37m$Z\e[m"
+ echo -e "  \e[40;1;32m<-- The $m deleted $s here$P, as \e[41;1;37m$Z\e[m search -->"
  let H=HISTCMD-u
  ((U=H>N? N: H))
  ((H)) && history $H |head -$U
