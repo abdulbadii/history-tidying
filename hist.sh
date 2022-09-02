@@ -162,16 +162,15 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  ((z))&&{ m="$((z+1)) lines"; s='were'
   ((H-l>z)) && P=", interlined with the undeleted lines"
  }
- echo -en '\e[1;32m';read -N1 -p "Delete the $m above from command history? (Enter: yes. Else: no) " o
- [[ $o = $'\xa' ]] ||continue
+ echo -en '\e[1;32m';read -N1 -sp "Delete the $m above from command history? (Enter: yes. Else: no) " o
+ echo -en '\e[m';[[ $o = $'\xa' ]] ||continue
  history -w /tmp/.bash_history0||{ echo cannot backup current history for reverting later;R=1;}
- for((i=z;i>=0;)){ history -d ${l[i--]} ;};did=1
- echo -e "The $m $s deleted\e[m"
+ for((i=z;i>=0;)){ history -d ${l[i--]} ;};did=1;echo ...deleted
  L=;let F=l-1
  if((l>N)) ;then let L=1+HISTCMD-l+N; F=$N
  else history $((N-F));fi
  history $L | head -$F
- echo -e "  \e[40;1;32m<-- The $m deleted $s here$P, as \e[41;1;37m$Z\e[m search -->"
+ echo -e "  \e[40;1;32m<-- The $m deleted $s here$P, as \e[41;1;37m$Z search -->\e[m"
  let H=HISTCMD-u
  ((U=H>N? N: H))
  ((H)) && history $H |head -$U
