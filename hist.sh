@@ -40,14 +40,15 @@ fi
 unset IFS C TL
 eval set -- $s
 ((N=25/3/((NE=${#*})? NE: 1)))
-for a ;{ unset i j mm e l u t z LO HI W
+for a ;{ unset i j k mm e l u t z LO HI W
  [[ $a != $1 ]] &&echo -en '\e[37;1;32m*\e[m'
- let M=HISTCMD-U; let m=1+HISTCMD-L   # Max & min shown
+ ((M=HISTCMD-U,m=1+HISTCMD-L))   # Max & min shown
  if [[ $a =~ ^([1-9][0-9]*)(=-?|-)?([1-9][0-9]*)?$ ]];then
   let l=u=BASH_REMATCH[1]
   [[ ${BASH_REMATCH[2]} ]] &&{
    u=${BASH_REMATCH[3]}
-   if [ ${BASH_REMATCH[2]} = - ] ;then : ${u:=$M}
+   if [ ${BASH_REMATCH[2]} = - ] ;then
+    : ${u:=$M}; ((l>u)) &&let l-=HISTCMD
    else ((u=l+${BASH_REMATCH[2]#=}(z=u?u:1))) ;fi
   }
  else
@@ -72,18 +73,24 @@ for a ;{ unset i j mm e l u t z LO HI W
  ((u<l)) &&{ T=$l;l=$u;u=$T ;}
  s=history\ $((1+HISTCMD-l))
  if((l==u));then
-  z=1;s="$s |head -1"; p=\ was;n=$l
+  z=1;s="$s|head -1"; p=\ was;n=$l
  else
   ((z=z?1+z:u-l+1))
   if((l<=0)) ;then
-   ((m>M)) && ((l+ HISTCMD-m+9<0)) &&{ echo $l is below the min $m shown, by 9 or more lines;continue;}
-   s="history $((W=-l+1)); history|head $u"
-   n="$((t=HISTCMD+l))-$HISTCMD,1-$u"
+   echo m=$m M=$M;echo l=$l u=$u
+   ((m>M)) &&((l+HISTCMD-m+9<0)) &&{ echo $l is 9 or more lines below the min $m shown;continue;}
+   s=history\ $((W=-l+1))
+   i="|head -$((W+u))"
+   ((u>0)) &&{ i=;j='history|head -$u'; k=,1-$u;}
+   s=$s$i\;$j
+   n=$((t=HISTCMD+l))-$((HISTCMD-(u>0?0:u)))$k
    LO={$HISTCMD..$t}; HI={$u..1}
   elif((u>HISTCMD)) ;then
-   ((m>M)) && ((u>HISTCMD+M+9)) &&{ echo $u is above the max $M shown, by 9 or more lines;continue;}
-   s="$s; history |head -$W"
-   n="$l-$HISTCMD,1-$((W=u-HISTCMD))"
+   ((m>M)) && ((u>HISTCMD+M+9)) &&{ echo $u is 9 or more lines above the max $M shown;continue;}
+   let W=u-HISTCMD
+   n=$l-$HISTCMD,1-$W
+   ((l>HISTCMD)) &&{ s=; let i=1+2*HISTCMD-l; n=$((l-HISTCMD))-$W; let W=u-l+1;}
+   s="$s; history $i|head -$W"
    LO={$HISTCMD..$l}; HI={$W..1}
   else
    s="$s|head -$z" ;n=$l-$u
@@ -93,7 +100,7 @@ for a ;{ unset i j mm e l u t z LO HI W
  IFS=$'\n';for i in `eval $s`;{
   [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
   printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}";}
- P="\''<-- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'` -->'\'"
+ P="\''<-- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$' -->\e[m'`'\'"
  let TL+=z
  ((W)) &&continue
  C="{$u..$l} $l$P $C"   # Join to-be-removed range entries with "$l<" token
