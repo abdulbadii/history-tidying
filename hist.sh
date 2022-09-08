@@ -2,39 +2,39 @@ h(){ # BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
 FG=1
-[[ $1 ]] ||{
- unset FG U did i;L=25;IFS=$'\n'
- for e in `history 25`;{ if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;}
+[[ $1 ]] ||{ unset FG i did U;L=25;IFS=$'\n'
+ for e in `history 25`;{ ((i++%5)) ||echo -ne '\e[1;32m'; echo $e$'\e[m';}
 }
-while :;do IFS=$'\n';s=
-if((FG));then m=$* #by CLI argument
+while :;do
+IFS=$'\n';s=
+if((FG));then m=$* # by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
- (((H=1+HISTCMD-(OF=BASH_REMATCH[1]))<3)) &&{ echo too few history lines;return;}
- while : ;do
+ (((H=1+HISTCMD-(OF=BASH_REMATCH[1]))<3))&&{ echo too few history lines;return;}
+ while :;do
   read -sN1 -p "`echo $'\r\e[K\e[44;1;37m'`Up/Down, n[=-n] by line, else string: " m;echo -n $'\e[m'
 		case $m in
 		$'\x1b') # \e
 			read -N1 m
-				read -N1 m;echo;u=;i=
+				read -N1 m;echo;i=;j=
 				case $m in
 				A) #UP
      ((U=L==H? 0: L))
-     (((L+=25)>H)) &&{ let L-=H; u=`history|head -$((25-L))`;};;
+     (((L+=25)>H)) &&{ let L-=H; j=`history|head -$((25-L))`;};;
 				B) #DN
-     (((U=(L=U?U:H)-25)<0)) &&{ u=`history|head $U`;	let U+=H;}
+     (((U=(L=U?U:H)-25)<0)) &&{ j=`history|head $U`;	let U+=H;}
 				esac
-    for e in `history $L |head -25` $u;{
-     if((i++%5)) ;then echo $e; else echo $'\e[1;32m'$e$'\e[m';fi;};;
+    for e in `history $L |head -25` $j;{ ((i++%5)) ||echo -ne '\e[1;32m'; echo $e$'\e[m';};;
 		$'\xa')	echo;break 2;;
-  $'\x7f') echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re m;break;;
+  $'\x7f')
+   echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re m;break;;
   *) read -rei "$m" m; break
 		esac
 	done
 fi
-if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--[1-9][0-9]*-?[0-9]*)+)(\ (.*))?$ ]];then
+if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--([1-9][0-9]*)?-?[0-9]*)+)(\ (.*))?$ ]];then
  s=${BASH_REMATCH[1]}
- Z=${BASH_REMATCH[7]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
+ Z=${BASH_REMATCH[8]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
 else Z=$m
 fi
 unset C TL W
@@ -45,25 +45,22 @@ for a ;{ unset i j k mm e l u t z LO HI W
  ((M=HISTCMD-U,m=1+HISTCMD-L))   # Max & min shown
  if [[ $a =~ ^([1-9][0-9]*)(=-?|-)?([1-9][0-9]*)?$ ]];then
   let l=u=BASH_REMATCH[1]
-  [[ ${BASH_REMATCH[2]} ]] &&{
-   u=${BASH_REMATCH[3]}
-   if [ ${BASH_REMATCH[2]} = - ] ;then
-    : ${u:=$M}; ((l>u)) &&let l-=HISTCMD
+  [[ ${BASH_REMATCH[2]} ]] &&{ u=${BASH_REMATCH[3]}
+   if [ ${BASH_REMATCH[2]} = - ] ;then : ${u:=$M}; ((l>u)) &&let l-=HISTCMD
    else ((u=l+${BASH_REMATCH[2]#=}(z=u?u:1))) ;fi
   }
  else
-  if [[ $a =~ ^--([1-9][0-9]*)(-([1-9][0-9]*)?)?$ ]] ;then
+  if [[ $a =~ ^--([1-9][0-9]*)?(-([1-9][0-9]*)?)?$ ]] ;then
    [[ ${BASH_REMATCH[2]} ]] &&
     e=${BASH_REMATCH[3]:-1}
-   ((e>=(d=BASH_REMATCH[1]))) ||((d>25)) &&{ echo $a: invalid range;continue;}
+   ((e>=(d=(d=BASH_REMATCH[1])?d:25))) ||((d>25)) &&{ echo $a: invalid range;continue;}
    let z=d-e-1
   elif [[ $a =~ ^-([1-9][0-9]*)?(=-?[0-9]*)?$ ]] ;then
    ((d=(d=BASH_REMATCH[1])?d:1))
    t=${BASH_REMATCH[2]}
    [[ $t ]] &&{ t=${t#=};z=${t#-}; ((z=z?t:${t}1)) ;}
   fi
-  ((u=z+(l=(l=1+M-d)<0? HISTCMD+l: l)))
-  z=${z#-}
+  ((u=z+(l=(l=1+M-d)<0? HISTCMD+l: l))); z=${z#-}
   mm=" as specified `echo $'\e[41;1;37m'$a`"
  fi
  ((m<M)) && (((l<m)) || ((l>M))) ||
@@ -100,10 +97,10 @@ for a ;{ unset i j k mm e l u t z LO HI W
  IFS=$'\n';for i in `eval $s`;{
   [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
   printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}";}
- P="\''<-- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$' -->\e[m'`'\'"
+ P="\''<---- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'`'\'"
  let TL+=z
  ((W)) &&continue
- C="{$u..$l} $l$P $C"   # Join to-be-removed range entries with "$l<" token
+ C="{$u..$l} $l$P $C"   # Join range entries with "$l<" token
 }
 ((W))&& C="$LO $C $HI 1$P"
 ((To=TO=2*NE*(N+1)-2))
@@ -145,8 +142,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  s=${s//\+/\\+};s=${s//\|/\\|};s=${s//\^/\\^};s=${s//\?/\\?};
  s=${s//\[/\\[};s=${s//\(/\\(};s=${s//\{/\\{}
  s=${s//\]/\\]};s=${s//\)/\\)};s=${s//\}/\\'}'};s=${s//\$/\\\$}
- m=${Z# };m=${m% }
- if((${#m}>2)) ;then
+ if((${#Z}>2)) ;then
   if [[ $s =~ ^[[:space:]]+(.*[[:graph:]])$ ]] ;then s="()(${BASH_REMATCH[1]})(.*)"
   elif [[ $s =~ ^([[:graph:]].*)[[:space:]]$ ]] ;then	s="(.*)(${BASH_REMATCH[1]})()"
   elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="()(${BASH_REMATCH[1]})()"
@@ -160,7 +156,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  ((u=-z+(H=l[--z]))) # l = l[0]
  m='line'; s='was'
  ((z))&&{ m="$((z+1)) lines"; s='were'
-  ((H-l>z)) && P=", interlined with the undeleted lines"
+  ((H-l>z)) && P=", interlined with the undeleted lines,"
  }
  echo -en '\e[1;32m';read -N1 -sp "Delete the $m above from command history? (Enter: yes. Else: no) " o
  echo -en '\e[m';[[ $o = $'\xa' ]] ||continue
@@ -170,7 +166,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  if((l>N)) ;then let L=1+HISTCMD-l+N; F=$N
  else history $((N-F));fi
  history $L | head -$F
- echo -e "  \e[40;1;32m<-- The $m deleted $s here$P, as \e[41;1;37m$Z search -->\e[m"
+ echo -e "  \e[40;1;32m<-- The $m deleted $s here$P as \e[41;1;37m$Z search -->\e[m"
  let H=HISTCMD-u
  ((U=H>N? N: H))
  ((H)) && history $H |head -$U
