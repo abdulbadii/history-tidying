@@ -26,8 +26,10 @@ else
 				esac
     for e in `history $L |head -25` $j;{ ((i++%5)) ||echo -ne '\e[1;32m'; echo $e$'\e[m';};;
 		$'\xa')	echo;break 2;;
-  $'\x7f')
-   echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re Z;Z=$Z\ ;break;;
+  $'\x7f') #BS
+   echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re Z
+   [[ $Z =~ (.*)[[:space:]]+$ ]]; Z=${BASH_REMATCH[1]}; break
+   ;;
   *) read -rei "$m" m; break
 		esac
 	done
@@ -96,7 +98,7 @@ for a ;{ unset i j k mm e l u t z LO HI W
   p=s\ were; n="$n ($z lines)"
  fi
  IFS=$'\n';for i in `eval $s`;{
-  [[ $i =~ ^[[:space:]]+([0-9]+).(.+) ]]
+  [[ $i =~ ^[[:space:]]+([0-9]+)\*?.(.+) ]]
   printf "\e[41;1;37m% 4d\e[m%s\n" ${BASH_REMATCH[1]} "${BASH_REMATCH[2]}";}
  P="\''<---- the deleted line$p here: `echo $'\e[41;1;37m'$n$'\e[40;1;32m'$mm$'\e[m'`'\'"
  let TL+=z
