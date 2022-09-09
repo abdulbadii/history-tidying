@@ -2,11 +2,13 @@ Click, copy "hist.sh" above, then paste, prepend the Bash functions inside to `~
 
 Tidying up Bash commands history by having good control in removing certain line(s) specified by number(s) or range or by a string segment lying in a history line.   
 
-###Requiremnts###   
-Bash 5/newer
-sed
-head
-recommended environment variable set: `export HISTCONTROL=erasedups:ignoredups`
+## Requiremnts   
+Bash 5 or newer  
+sed  
+head  
+
+Recommended   
+environment variable setting `export HISTCONTROL=erasedups:ignoredups`   
 
 simply type `h` then it'll show the latest 25 lines of shell commands e.g:   
 ```
@@ -37,9 +39,10 @@ Up/Down. n[=-n] by line or else string:
 - put two dash in a row then number: `--5`, will remove the last 5 lines relative to the last lines being shown.   
 - likewise above with addition -number to except the last that number lines, e.g. `--5-2` remove all the last 5 lines but the last 2 lines, `--5-` will remove the last 5 lines but the last line, and -- means --25 and --- means --25-1       
 - or put anything else, it'll be treated as the characters of substring of a command line in hisory as long as it has at least 3 printable characters. Any history command line having that string will be searched and printed before being removed. Now if the left/right end is made adjacent with space, that end will be anchored as the first/last string to search, so surrounding it with spaces will turn it to be exact string to match instead of substring   
-- likewise above but it has only 1 or 2 printable characters, it will be assumed to find this string as exact, whole line. Alternatively it can be made as a substring search if either one is, or both are, `.`   
+- likewise above with only 1 or 2 printable characters, it will be assumed to find this string as exact, whole line. Alternatively it can be made as a substring search if either one is, or both are, `.`   
 - if input character with `.` (single period) it becomes just OS shell `?` wildcard character, while the literal periode is input with `\.`     
-- if input character with `...` (three period in a row) it becomes just OS shell `*` wildcard character    
+- if input character with `...` (three period in a row) it becomes just OS shell `*` wildcard character
+- if multiple range entries with the final one is as substring (not match number range pattern), then these will be searched all in the order mentioned i.e. ascending range entries ended with the substring entry   
 - Do all these easily as it can be as the shell prompt function (well termed as `readline`) by hitting backspace first to get in shell prompt behavour (up/down key to retrieve a command)   
 
 If one already knew the number or the searched string, then just put directly in shell/terminal prompt to delete it such as:   
