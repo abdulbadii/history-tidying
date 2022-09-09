@@ -5,8 +5,8 @@ FG=1
 [[ $1 ]] ||{ unset FG i did U;L=25;IFS=$'\n'
  for e in `history 25`;{ ((i++%5)) ||echo -ne '\e[1;32m'; echo $e$'\e[m';}
 }
-while :;do
-IFS=$'\n';s=
+while :;do IFS=$'\n'
+unset s Z
 if((FG));then m=$* # by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
@@ -27,17 +27,19 @@ else
     for e in `history $L |head -25` $j;{ ((i++%5)) ||echo -ne '\e[1;32m'; echo $e$'\e[m';};;
 		$'\xa')	echo;break 2;;
   $'\x7f')
-   echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re m;break;;
+   echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re Z;Z=$Z\ ;break;;
   *) read -rei "$m" m; break
 		esac
 	done
 fi
-if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--([1-9][0-9]*)?-?[0-9]*)+)(\ (.*))?$ ]];then
- s=${BASH_REMATCH[1]}
- Z=${BASH_REMATCH[8]};[[ $Z ]]&&echo -e "Try to find line: $s\nAlso one with string $Z"
-else Z=$m
-fi
-unset C TL W
+[[ $Z ]] ||{
+ if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--([1-9][0-9]*)?-?[0-9]*)+)(\ (.*))?$ ]]
+ then
+  s=${BASH_REMATCH[1]};Z=${BASH_REMATCH[8]}
+  [[ $Z ]]&&echo -e "Finding line: $s... Also one with string\n$Z"
+ else Z=$m;fi
+}
+unset C P TL W
 eval set -- $s
 ((N=25/3/((NE=${#*})? NE: 1)))
 for a ;{ unset i j k mm e l u t z LO HI W
@@ -74,7 +76,6 @@ for a ;{ unset i j k mm e l u t z LO HI W
  else
   ((z=z?1+z:u-l+1))
   if((l<=0)) ;then
-   echo m=$m M=$M;echo l=$l u=$u
    ((m>M)) &&((l+HISTCMD-m+9<0)) &&{ echo $l is 9 or more lines below the min $m shown;continue;}
    s=history\ $((W=-l+1))
    i="|head -$((W+u))"
@@ -86,7 +87,7 @@ for a ;{ unset i j k mm e l u t z LO HI W
    ((m>M)) && ((u>HISTCMD+M+9)) &&{ echo $u is 9 or more lines above the max $M shown;continue;}
    (((W=HISTCMD-u)==-1)) &&W=
    n=$l-$HISTCMD,1$W
-   ((l>HISTCMD)) &&{ n=$((l-HISTCMD))$W; s=; ((i=1+2*HISTCMD-l,W=l-u-1));}
+   ((l>HISTCMD)) &&{ n=$((l-HISTCMD))$W; s=:; ((i=1+2*HISTCMD-l,W=l-u-1));}
    s="$s; history $i |head $W"
    LO={$HISTCMD..$l}; HI={${W#-}..1}
   else
@@ -105,7 +106,7 @@ for a ;{ unset i j k mm e l u t z LO HI W
 ((W))&& C="$LO $C $HI 1$P"
 ((To=TO=2*NE*(N+1)-2))
 ((TL)) &&{
-unset IFS s F LN R
+unset IFS s h LN R
 if((TL==1)) ;then TL=\ above
 else TL=se\ $TL;s=s;fi
 echo -en '\e[1;32m';read -sN1 -p "Delete the$TL line$s? (Enter: yes. Else: no) " o;echo -en '\e[m'
@@ -113,14 +114,13 @@ echo -en '\e[1;32m';read -sN1 -p "Delete the$TL line$s? (Enter: yes. Else: no) "
 history -w /tmp/.bash_history0||{ echo cannot backup current history for reverting later;R=1;}
 eval set -- `eval echo $C`
 for e;{
- history -d $e 2>/dev/null ||{
+ history -d $e 2>/dev/null ||{ IFS=$'\n'
   ((i=(To-=2*N)));l=${e%<*}
-  H=;L=$HISTCMD;let F=l-1
-  IFS=$'\n'
-  if((l>N)) ;then let L+=1-l+N; F=$N
-  else for j in `history $((N-F))`;{ LN[i++]=$j ;}
+  H=;L=$HISTCMD;let h=l-1
+  if((l>N)) ;then let L+=1-l+N; h=$N
+  else for j in `history $((N-h))`;{ LN[i++]=$j ;}
   fi
-  for j in `history $L |head -$F`;{ LN[i++]=$j ;}
+  for j in `history $L |head -$h`;{ LN[i++]=$j ;}
   LN[i++]=" `echo $'\e[1;32m'${e#$l}`"
   ((U=(H=W? HISTCMD: 1+HISTCMD-l)>N? N: H))
   ((H)) &&for j in `history $H |head -$U`;{ LN[i++]=$j ;}
@@ -166,7 +166,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  if((l>N)) ;then let L=1+HISTCMD-l+N; F=$N
  else history $((N-F));fi
  history $L | head -$F
- echo -e "  \e[40;1;32m<-- The $m deleted $s here$P as \e[41;1;37m$Z search -->\e[m"
+ echo -e "  \e[40;1;32m<-- The $m deleted $s here$P as search for \e[41;1;37m$Z\e[m"
  let H=HISTCMD-u
  ((U=H>N? N: H))
  ((H)) && history $H |head -$U
