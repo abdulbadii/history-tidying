@@ -42,8 +42,8 @@ Up/Down. n[=-n] by line or else string:
 - likewise above with only 1 or 2 printable characters, it will be assumed to find this string as exact, whole line. Alternatively it can be made as a substring search if either one is, or both are, `.`   
 - if input character with `.` (single period) it becomes just OS shell `?` wildcard character, while the literal periode is input with `\.`    
 - if input character with `...` (three period in a row) it becomes just OS shell `*` wildcard character
-- All this is case-sensitive string search, to have it insensitive precede it with two spacebar    
-- if range entries are many and with substring as the final one (string not matches range pattern), then these will be searched all in the order mentioned i.e. ascending range entries ended with the substring entry   
+- All this is case-sensitive string search, to be case-insensitive, precede it with two spacebar    
+- if range entries are many and a substring one at the final (string not matches range pattern), then these will be searched all in the order mentioned i.e. ascending range entries ended with the substring entry   
 - Do all these easily as it can be as the shell prompt function (a well term `readline`) by hitting backspace first to get in shell prompt behavour (up/down key to retrieve a command)   
 
 If one already knew the number or the searched string, then just put directly in shell/terminal prompt to delete it such as:   

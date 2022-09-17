@@ -8,7 +8,7 @@ FG=1
 }
 while :;do IFS=$'\n'
 unset s Z
-if((FG));then m=$* #by CLI argument
+if((FG));then m="$@" #by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
  (((H=1+HISTCMD-(OF=BASH_REMATCH[1]))<3))&&{ echo too few history lines;return;}
@@ -169,7 +169,7 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
  if((l>N)) ;then let L=1+HISTCMD-l+N; F=$N
  else history $((N-F));fi
  history $L | head -$F
- echo -e "  \e[40;1;32m<-- The $m deleted $s here$P as search for \e[41;1;37m$Z\e[m"
+ echo -e " \e[40;1;32m<--- The $m deleted $s here$P as search for \e[41;1;37m$Z\e[m"
  let H=HISTCMD-u
  ((U=H>N? N: H))
  ((H)) && history $H |head -$U
