@@ -2,20 +2,21 @@ h(){ # BEGIN h
 [[ $1 =~ ^-cr|^-rc ]] &&{ history -c;history -r;return;}
 [[ $1 =~ ^--help$|^-[anprswdc]$|^\. ]] &&{ history ${@#.};return;}
 FG=1
-[[ $1 ]] ||{ unset FG i did U;L=25;IFS=$'\n'
+[[ $1 ]] ||{
+ unset FG i did U;L=25;IFS=$'\n'
  for e in `history 25`;{ ((i++%5)) ||echo -ne '\e[1;32m'; echo $e$'\e[m';}
 }
 while :;do IFS=$'\n'
 unset s Z
-if((FG));then m=$* # by CLI argument
+if((FG));then m=$* #by CLI argument
 else
  [[ `history|head -1` =~ ^[[:space:]]+([0-9]+) ]]
  (((H=1+HISTCMD-(OF=BASH_REMATCH[1]))<3))&&{ echo too few history lines;return;}
  while :;do
   read -sN1 -p "`echo $'\r\e[K\e[44;1;37m'`Up/Down, n[=-n] by line, else string: " m;echo -n $'\e[m'
 		case $m in
-		$'\x1b') # \e
-			read -N1 m
+		$'\x1b') #\e
+			read -N1 m; [[ $m != [ ]] &&break
 				read -N1 m;echo;i=;j=
 				case $m in
 				A) #UP
@@ -28,20 +29,19 @@ else
 		$'\xa')	echo;break 2;;
   $'\x7f') #BS
    echo -e '\r\e[K\e[44;1;37mreadline input\e[m'; read -re Z
-   [[ $Z =~ (.*)[[:space:]]+$ ]]; Z=${BASH_REMATCH[1]}; break
-   ;;
+   echo -e '\e[m'
+   break;;
   *) read -rei "$m" m; break
 		esac
 	done
 fi
 [[ $Z ]] ||{
  if [[ \ $m =~ ^((\ +[1-9][0-9]*(=?-?([1-9][0-9]*)?)?|\ +-[1-9][0-9]*(=-?[0-9]*)?|\ +-|\ +--([1-9][0-9]*)?-?[0-9]*)+)(\ (.*))?$ ]]
- then
-  s=${BASH_REMATCH[1]};Z=${BASH_REMATCH[8]}
-  [[ $Z ]]&&echo -e "Finding line: $s... Also one with string\n$Z"
+ then s=${BASH_REMATCH[1]};Z=${BASH_REMATCH[8]}
+  [[ $Z ]]&&echo -e "Finding line: $s. Also one with string\n$Z"
  else Z=$m;fi
 }
-unset C P TL W
+unset CI C P TL W
 eval set -- $s
 ((N=25/3/((NE=${#*})? NE: 1)))
 for a ;{ unset i j k mm e l u t z LO HI W
@@ -132,13 +132,13 @@ for e;{
    for j in `history |head -$U`;{ LN[i++]=$j ;}
    let U=HISTCMD-U
   }
-  let To-=2;LN[i++]='            ~~~~~~~'
+  let To-=2;LN[i++]='         ~~~~~~~'
  }
 }
 echo "...deleted";did=1
 for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
 }
-[[ $Z ]] &&{
+[[ $Z ]] &&{ [[ $Z =~ ^\ \ (.*) ]] &&{ CI=i; Z=${BASH_REMATCH[1]};}
  s=${Z//\\/\\\\};s=${s//\\\\./\\.};s=${s//\"/\\\"}
  s=${s//\//\\/};s=${s//\*/\\*};s=${s//.../.*}
  s=${s//\+/\\+};s=${s//\|/\\|};s=${s//\^/\\^};s=${s//\?/\\?};
@@ -149,9 +149,10 @@ for((j=0;j<=TO;)){ echo ${LN[j++]} ;}
   elif [[ $s =~ ^([[:graph:]].*)[[:space:]]$ ]] ;then	s="(.*)(${BASH_REMATCH[1]})()"
   elif [[ $s =~ ^[[:space:]](.*)[[:space:]]$ ]] ;then	s="()(${BASH_REMATCH[1]})()"
   elif [[ $s =~ ^[[:graph:]].*[[:graph:]]$ ]] ;then s="(.*)($s)(.*)";fi
+ else s="()($s)()"
  fi
- z=;for i in `history |sed -nE "/^\s+[0-9]+\*?\s+$s$/p"`;{
-  [[ $i =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]+$s ]]
+ z=;for i in `history |sed -nE "s/^\s+([0-9]+)\*?\s+$s$/\1\\\v\2\\\v\3\\\v\4/p$CI"`;{
+  [[ $i =~ ^([[:print:]]+).([[:print:]]*).([[:print:]]+).([[:print:]]*) ]]
   printf "\e[1;36m% 4d \e[m%s\e[41;1;37m%s\e[m%s\n" $((l[z++]=BASH_REMATCH[1])) "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"
  }
  ((z)) ||{ echo -e "\e[41;1;37m$Z\e[m wasn't found, did nothing";continue;}
@@ -187,7 +188,7 @@ done
   {	[[ $l =~ ^[[:space:]]+([0-9]+)\*?[[:space:]]*$ ]] &&history -d $((BASH_REMATCH[1]-i++)); }
   history -w&&echo ..saved
 	else
-  ((R)) || [[ ! $o =~ ^[nN]$ ]] &&{ history -c;history -r /tmp/.bash_history0;}
+  ((R)) ||[[ ! $o =~ ^[nN]$ ]] &&{ history -c;history -r /tmp/.bash_history0;}
   echo $o
  fi
 };unset IFS
