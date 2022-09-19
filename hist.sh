@@ -16,9 +16,13 @@ else
   read -sN1 -p "`echo $'\r\e[K\e[44;1;37m'`Up/Down, n[=-n] by line, else string: " m;echo -n $'\e[m'
 		case $m in
 		$'\x1b') #\e
-			read -N1 m; [[ $m != [ ]] &&break
+			read -N1 m; [[ $m != [ ]] &&break 2
 				read -N1 m;echo;i=;j=
 				case $m in
+				F) #END
+     L=25;U=;;
+				H) #HM
+     L=;let U=HISTCMD-25;;
 				A) #UP
      ((U=L==H? 0: L))
      (((L+=25)>H)) &&{ let L-=H; j=`history|head -$((25-L))`;};;
